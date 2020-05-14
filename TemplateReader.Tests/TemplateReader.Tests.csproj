@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TemplateReader\TemplateReader.csproj" />
+    <ProjectReference Include="..\SubModules\NetCoreSystemEnvHelper\NetCoreSystemEnvHelper.csproj" />
   </ItemGroup>
 
 </Project>
