@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Resources\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>TemplateReader.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <ProjectReference Include="..\SubModules\NetCoreSystemEnvHelper\NetCoreSystemEnvHelper.csproj" />
+  </ItemGroup>
+</Project>
