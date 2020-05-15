@@ -7,6 +7,9 @@
     <Content Include="Resources\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>TemplateReader.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <ProjectReference Include="..\SubModules\NetCoreSystemEnvHelper\NetCoreSystemEnvHelper.csproj" />
   </ItemGroup>
 </Project>

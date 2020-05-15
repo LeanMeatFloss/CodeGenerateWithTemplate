@@ -1,0 +1,1988 @@
+$$$Content$$$
+$$$Resources$$$
+$$$Instance Name="DBCNodes" Type="DBCFileParser" Function="ParserNodesFromFile" InputArgs="C:\Personal\WorkSpaces\WorkForRBCDProj\WorkItems\RBCD\CAN_Matrix\20200421_RBCD_B1_CAN Matrix_V2.dbc"  Path="Resources/TemplateReader.Tests.Resources/Dlls" /$$$
+$$$Instance Name="StandardFiggle" Type="FiggleFonts" Property="Standard" Path="Resources/TemplateReader.Tests.Resources/Dlls" /$$$
+$$$Instance Name="SectionFiggle" Type="FiggleFonts" Property="Colossal" Path="Resources/TemplateReader.Tests.Resources/Dlls" /$$$
+$$$Instance Name="LabelFiggle" Type="FiggleFonts" Property="FourTops" Path="Resources/TemplateReader.Tests.Resources/Dlls" /$$$
+$$$/Resources$$$
+/* $START_RBHEADER$ ********************************************************
+   *************************************************************************
+
+    Copyright (c) Robert Bosch GmbH, Germany
+                  All rights reserved
+
+   *************************************************************************
+
+    Filename:             ComWrp_ComWrapper_cc.c
+
+    Department:           AE/EEC3
+
+    Author:               Moeller Rico
+
+    Creation Date:        2015-04-24 11:18:22
+
+    Short Description:    Provides interface to Com. All signals will be converted in float.
+
+   *************************************************************************
+   $END_RBHEADER$ ********************************************************** */
+
+/* ## Start Clear Case Comment Implementation [0b5bdcf6-988d-46f7-aa43-b4ed0819a479] */
+/* ## End Clear Case Comment */
+
+/* MODULE-DEFINITON ******************************************************** */
+#define _COMWRP_COMWRAPPER
+
+/* INCLUDE FILES *********************************************************** */
+
+/* Base Types */
+#include "StdT_StandardTypes_Itf_ih.h"
+
+/* DAMOS ROM and RAM Data */
+#include "rom_ih.h"
+#include "ram_ih.h"
+
+/* Own Header Files */
+#include "ComWrp_ComWrapper_hh.h"
+#include "ComWrp_ComWrapper_kh.h"
+
+
+#ifdef RB_PROG_FLOW_MON
+   #include "PrgF_ProgFlowMon_Itf_ih.h"
+#endif
+
+
+/* Set the next line in comment characters to activate MATHLIB for overflow check.
+ * Note, that more runtime is necessary in that case!
+ */
+#define NOMATHLIB
+
+#include "MathL_MathLibrary_Itf_ih.h"
+
+/* CODE FOR POLYSPACE-TEST ************************************************* */
+#ifdef PST
+
+/* ## Start Polyspace Test Code [0b5bdcf6-988d-46f7-aa43-b4ed0819a479] */
+
+/* ## End Polyspace Test Code */
+
+#endif
+
+
+/* GLOBAL DEFINITIONS ****************************************************** */
+
+/* PRQA S 5087 COMWRP_COMWRAPPER */
+/* Variables */
+
+#define COMWRP_START_SEC_VAR_BOOLEAN
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_VAR_BOOLEAN
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_VAR_8BIT
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_VAR_8BIT
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_VAR_16BIT
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_VAR_16BIT
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_VAR_32BIT
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_VAR_32BIT
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_VAR_UNSPECIFIED
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_VAR_UNSPECIFIED
+#include "ComWrp_MemMap.h"
+
+
+/* Constants */
+
+#define COMWRP_START_SEC_CONST_BOOLEAN
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_BOOLEAN
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_CONST_8BIT
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_8BIT
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_CONST_16BIT
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_16BIT
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_CONST_32BIT
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_32BIT
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_CONST_UNSPECIFIED
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_UNSPECIFIED
+#include "ComWrp_MemMap.h"
+
+
+/* ******************************** Safe Part ******************************** */
+/* Variables */
+
+#define COMWRP_START_SEC_VAR_BOOLEAN_SW23
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_VAR_BOOLEAN_SW23
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_VAR_8BIT_SW23
+#include "ComWrp_MemMap.h"
+
+/* E2E Eem_Edrv_Des */
+static uint8 CS_ComWrp_Eem_Edrv_Des_Data_pu8[CS_ComWrp_Eem_Edrv_Des_1_Data_length];
+static uint8 CS_ComWrp_Eem_Edrv_Des_E2EAliveErrorCnt;
+static uint8 CS_ComWrp_Eem_Edrv_Des_E2ECRCErrorCnt;
+
+/* E2E Pt_Edrv_Des */
+static uint8 CS_ComWrp_Pt_Edrv_Des_Data_pu8[CS_ComWrp_Pt_Edrv_Des_1_Data_length];
+static uint8 CS_ComWrp_Pt_Edrv_Des_E2EAliveErrorCnt;
+static uint8 CS_ComWrp_Pt_Edrv_Des_E2ECRCErrorCnt;
+
+/* E2E Pt_Veh */
+static uint8 CS_ComWrp_Pt_Veh_Data_pu8[CS_ComWrp_Pt_Veh_1_Data_length];
+static uint8 CS_ComWrp_Pt_Veh_E2EAliveErrorCnt;
+static uint8 CS_ComWrp_Pt_Veh_E2ECRCErrorCnt;
+
+#define COMWRP_STOP_SEC_VAR_8BIT_SW23
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_VAR_16BIT_SW23
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_VAR_16BIT_SW23
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_VAR_32BIT_SW23
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_VAR_32BIT_SW23
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_VAR_UNSPECIFIED_SW23
+#include "ComWrp_MemMap.h"
+/* E2E Eem_Edrv_Des */
+static E2E_P02ReceiverStateType CS_ComWrp_Eem_Edrv_Des_State_tp = {0,0,TRUE,0,0,E2E_P02STATUS_NONEWDATA};
+static E2E_P02ReceiverStatusType CS_ComWrp_Eem_Edrv_Des_E2EState = E2E_P02STATUS_INITIAL;
+static boolean CS_ComWrp_Eem_Edrv_Des_E2EError;
+static boolean CS_ComWrp_Eem_Edrv_Des_E2EDeb;
+
+/* E2E Pt_Edrv_Des */
+static E2E_P02ReceiverStateType CS_ComWrp_Pt_Edrv_Des_State_tp = {0,0,TRUE,0,0,E2E_P02STATUS_NONEWDATA};
+static E2E_P02ReceiverStatusType CS_ComWrp_Pt_Edrv_Des_E2EState = E2E_P02STATUS_INITIAL;
+static boolean CS_ComWrp_Pt_Edrv_Des_E2EError;
+static boolean CS_ComWrp_Pt_Edrv_Des_E2EDeb;
+
+/* E2E Pt_Veh */
+static E2E_P02ReceiverStateType CS_ComWrp_Pt_Veh_State_tp = {0,0,TRUE,0,0,E2E_P02STATUS_NONEWDATA};
+static E2E_P02ReceiverStatusType CS_ComWrp_Pt_Veh_E2EState = E2E_P02STATUS_INITIAL;
+static boolean CS_ComWrp_Pt_Veh_E2EError;
+static boolean CS_ComWrp_Pt_Veh_E2EDeb;
+
+#define COMWRP_STOP_SEC_VAR_UNSPECIFIED_SW23
+#include "ComWrp_MemMap.h"
+
+
+/* Constants */
+
+#define COMWRP_START_SEC_CONST_BOOLEAN_SW23
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_BOOLEAN_SW23
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_CONST_8BIT_SW23
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_8BIT_SW23
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_CONST_16BIT_SW23
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_16BIT_SW23
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_CONST_32BIT_SW23
+#include "ComWrp_MemMap.h"
+#define COMWRP_STOP_SEC_CONST_32BIT_SW23
+#include "ComWrp_MemMap.h"
+
+#define COMWRP_START_SEC_CONST_UNSPECIFIED_SW23
+#include "ComWrp_MemMap.h"
+static const E2E_P02ConfigType CS_ComWrp_Pt_Edrv_Des_Config_tp =
+{
+   CS_ComWrp_Pt_Edrv_Des_DataLength,
+   CS_ComWrp_Pt_Edrv_Des_DataID,
+   CS_ComWrp_MaxDeltaAlvCntr
+};
+
+static const E2E_P02ConfigType CS_ComWrp_Eem_Edrv_Des_Config_tp =
+{
+   CS_ComWrp_Eem_Edrv_Des_DataLength,
+   CS_ComWrp_Eem_Edrv_Des_DataID,
+   CS_ComWrp_MaxDeltaAlvCntr
+};
+
+static const E2E_P02ConfigType CS_ComWrp_Pt_Veh_Config_tp =
+{
+   CS_ComWrp_Pt_Veh_DataLength,
+   CS_ComWrp_Pt_Veh_DataID,
+   CS_ComWrp_MaxDeltaAlvCntr
+};
+#define COMWRP_STOP_SEC_CONST_UNSPECIFIED_SW23
+#include "ComWrp_MemMap.h"
+
+
+/* PRQA L: COMWRP_COMWRAPPER */
+
+#ifdef CS_RTRT
+   #define  RTRT_ComWrp_ComWrapper_DEFINE
+   #include "ComWrp_ComWrapper_rh.h"
+#endif
+
+
+
+/* PRQA S 5087 COMWRP_COMWRAPPER */
+#define COMWRP_START_SEC_CODE_SW23
+#include "ComWrp_MemMap.h"
+/* PRQA L: COMWRP_COMWRAPPER */
+
+/******************************************************************************
+Definition of the Global Function:
+   void CS_ComWrp_Init(void)
+*******************************************************************************
+Function Description:
+Initializes COM-wrapper
+
+******************************************************************************/
+void CS_ComWrp_Init(void)
+{
+   /* ## OperationBody [4971c1a0-dc65-43b2-a64d-bee5adae3152] */
+
+   #ifdef CS_RTRT
+      #define  RTRT_CS_ComWrp_Init_START
+      #include "ComWrp_ComWrapper_rh.h"
+   #endif
+
+   #ifdef RB_PROG_FLOW_MON
+      CS_RB_PROG_FLOW_COMWRP_1_START
+   #endif
+
+   /* Set Crash signal to valid to avoid wrong detection of crash */
+   (void)Rte_Write_ComWrp_Outp_fCrashVld(TRUE);
+
+   #ifdef RB_PROG_FLOW_MON
+      CS_RB_PROG_FLOW_COMWRP_1_END
+   #endif
+
+   #ifdef CS_RTRT
+      #define  RTRT_CS_ComWrp_Init_END
+      #include "ComWrp_ComWrapper_rh.h"
+   #endif
+
+   return;
+
+/* ## OperationBody End */
+}
+
+/* PRQA S 5087 COMWRP_COMWRAPPER */
+#define COMWRP_STOP_SEC_CODE_SW23
+#include "ComWrp_MemMap.h"
+/* PRQA L: COMWRP_COMWRAPPER */
+
+
+/* PRQA S 5087 COMWRP_COMWRAPPER */
+#define COMWRP_START_SEC_CODE
+#include "ComWrp_MemMap.h"
+/* PRQA L: COMWRP_COMWRAPPER */
+
+/******************************************************************************
+Definition of the Global Function:
+   void CS_ComWrp_Proc_100ms(void)
+*******************************************************************************
+Function Description:
+Processing of COM-signals
+
+******************************************************************************/
+void CS_ComWrp_Proc_100ms(void)
+{
+   /* ## OperationBody [0d503032-cc7e-424d-b284-16ca3eaf8f85] */
+
+   CS_ComWrp_tNEG_TQ_ALLWD_E        CS_ComWrp_sNegTqAllwd_lde;
+   Std_ReturnType                   CS_ComWrp_yReturnvalue_lde;
+   uint8                            CS_ComWrp_ySignalu8Bit_ldu8;
+   uint16                           CS_ComWrp_ySignalu16Bit_ldu16;
+   uint32                           CS_ComWrp_ySignalu32Bit_ldu32;
+   float32                          CS_ComWrp_ySignalf32Bit_ldf32;
+
+   /* OBD cycle states */
+   uint8                            CS_ComWrp_yWarmUpCycle_ldu8;
+   static uint8                     CS_ComWrp_yWarmUpCycleOld_sdu8 = 0;
+
+   #ifdef CS_RTRT
+      #define  RTRT_CS_ComWrp_Proc_100ms_START
+      #include "ComWrp_ComWrapper_rh.h"
+   #endif
+
+   #ifdef RB_PROG_FLOW_MON
+      CS_RB_PROG_FLOW_COMWRP_2_START
+   #endif
+
+   /*****************************************/
+   /*   OOOOOOOO     BBBBBBBB    DDDDDDDD   */
+   /*   OOOOOOOO     BBBBBBBBB   DDDDDDDDD  */
+   /* OOOO    OOOO   BBBB    BB  DDDD  DDDD */
+   /* OOOO    OOOO   BBBB    BB  DDDD    DD */
+   /* OOOO    OOOO   BBBBBBBBB   DDDD    DD */
+   /* OOOO    OOOO   BBBBBBBBB   DDDD    DD */
+   /* OOOO    OOOO   BBBB    BB  DDDD    DD */
+   /* OOOO    OOOO   BBBB    BB  DDDD  DDDD */
+   /*   OOOOOOOO     BBBBBBBBB   DDDDDDDDD  */
+   /*   OOOOOOOO     BBBBBBBBB   DDDDDDDD   */
+   /*****************************************/
+
+   /*************************************************/
+   /* Cold Start Emission Reduction Strategy active */
+   /*************************************************/
+   /* Obd_flgCsersActv                              */
+   /*************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_flgCsersActv(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* Signal for OBD. ToDo: Add signal and verify whether state is required */
+
+
+   /************************************************/
+   /* OBD service $04 (fault memory clear) enabled */
+   /************************************************/
+   /* Obd_flgSrv04Enad                             */
+   /************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_flgSrv04Enad(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* Signal for OBD. ToDo: Add signal and verify whether state is required */
+
+
+   /***********************************************/
+   /* Conditions for cold start denominator state */
+   /***********************************************/
+   /* Obd_stColdStrtDenomCdn                      */
+   /***********************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_stColdStrtDenomCdn(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* Signal for OBD. ToDo: Add signal and verify whether state is required */
+
+
+   /******************************************/
+   /* Conditions for OBD Driving Cycle state */
+   /******************************************/
+   /* Obd_stDcycCdn                          */
+   /******************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_stDcycCdn(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_yDrvCycle(CS_ComWrp_ySignalu8Bit_ldu8);
+
+
+   /********************************************/
+   /* Conditions for general denominator state */
+   /********************************************/
+   /* Obd_stGnrlDenomCdn                       */
+   /********************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_stGnrlDenomCdn(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* Signal for OBD. ToDo: Add signal and verify whether state is required */
+
+
+   /*******************************************************************************************/
+   /* Condition to delete permanent diagnostic trouble codes of general denominator fulfilled */
+   /*******************************************************************************************/
+   /* Obd_stGnrlDenomPdtcDltCdn                                                               */
+   /*******************************************************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_stGnrlDenomPdtcDltCdn(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* If the Signal is Set - Qualify Permanent DTC cycle */
+   if(CS_ComWrp_SignalSet == CS_ComWrp_ySignalu8Bit_ldu8)
+   {
+      Rte_Call_Dem_PfcCycleQualified_SetPfcCycleQualified();
+   }
+
+
+   /************************************************/
+   /* Conditions for OBD Ignition Cycle fulfilled  */
+   /************************************************/
+   /* Obd_stIgnCycCdn                              */
+   /************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_stIgnCycCdn(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* Signal for OBD. ToDo: Add signal and verify whether state is required */
+
+
+   /******************************************************************************************/
+   /* Conditions for 'OBD Ignition Cycle with Internal Combustion Engine running' fulfilled  */
+   /******************************************************************************************/
+   /* Obd_stIgnCycEngRunngCdn                                                                */
+   /******************************************************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_stIgnCycEngRunngCdn(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* Signal for OBD. ToDo: Add signal and verify whether state is required */
+
+
+   /************************************/
+   /* Conditions for warm-up fulfilled */
+   /************************************/
+   /* Obd_stWrmupCdn                   */
+   /************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Obd_stWrmupCdn(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   CS_ComWrp_yWarmUpCycle_ldu8 = CS_ComWrp_ySignalu8Bit_ldu8;
+
+   /* Determine whether current signal is set and previous signal wasn't set */
+   if ((CS_ComWrp_SignalSet == CS_ComWrp_yWarmUpCycle_ldu8) && (CS_ComWrp_SignalNotSet == CS_ComWrp_yWarmUpCycleOld_sdu8))
+   {
+      /* Conditions for WarmUp Cycle => 1=condition fulfilled */
+      /* therefore start WarmUp Cycle with DEM_CYCLE_STATE_START */
+      Rte_Call_OpCycle_DEM_OPCYC_WARMUP_SetOperationCycleState(DEM_CYCLE_STATE_START);
+   }
+
+   /* Store previous value */
+   CS_ComWrp_yWarmUpCycleOld_sdu8 = CS_ComWrp_yWarmUpCycle_ldu8;
+
+
+
+
+   /*******************************/
+   /* PPPPPPPP       TTTTTTTTTTTT */
+   /* PPPPPPPPPP     TTTTTTTTTTTT */
+   /* PPPP    PPPP       TTTT     */
+   /* PPPP    PPPP       TTTT     */
+   /* PPPPPPPPPP         TTTT     */
+   /* PPPPPPPP           TTTT     */
+   /* PPPP               TTTT     */
+   /* PPPP               TTTT     */
+   /* PPPP               TTTT     */
+   /* PPPP               TTTT     */
+   /*******************************/
+
+   /*************/
+   /* Odometer  */
+   /*************/
+   /* Pt_dstOdo */
+   /*************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Pt_dstOdo(&CS_ComWrp_ySignalu32Bit_ldu32);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu32Bit_ldu32 = 0u;
+   }
+   /* Add factor 0,1 and offset 0 to signal */
+   CS_ComWrp_ySignalu32Bit_ldu32 = (uint32)((CS_ComWrp_ySignalu32Bit_ldu32 * 0.1F) + (0.0F));
+   /* Send value */
+   /* Signal for OBD. */
+   (void)Rte_Write_ComWrp_Outp_dstOdo(CS_ComWrp_ySignalu32Bit_ldu32);
+
+
+   /******************************/
+   /* Accelerator pedal position */
+   /******************************/
+   /* Pt_ratApp                  */
+   /******************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Pt_ratApp(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 255u;
+   }
+   /* Add factor 0,5 and offset 0 to signal */
+   /*CS_ComWrp_ySignalu8Bit_ldu8 = ((((uint8)CS_ComWrp_ySignalu8Bit_ldu8) * 0.5F) + (0.0F));*/
+   /* Send value */
+   /* Signal for OBD. */
+   (void)Rte_Write_ComWrp_Outp_ratApp(CS_ComWrp_ySignalu8Bit_ldu8);
+
+
+   /*****************/
+   /* Engine load   */
+   /*****************/
+   /* Pt_ratEngLoad */
+   /*****************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Pt_ratEngLoad(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 255u;
+   }
+   /* Add factor 0,5 and offset 0 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = (((float32)CS_ComWrp_ySignalu8Bit_ldu8) * 0.5F) + (0.0F);
+   /* Send value */
+   /* Signal for OBD. */
+   (void)Rte_Write_ComWrp_Outp_ratEngLoad(CS_ComWrp_ySignalf32Bit_ldf32);
+
+
+   /******************************/
+   /* Engine coolant temperature */
+   /******************************/
+   /* Pt_tCooltEng               */
+   /******************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Pt_tCooltEng(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 255u;
+   }
+   /* There is no factor and no offset */
+   /* Signal for OBD. */
+   (void)Rte_Write_ComWrp_Outp_tCooltEng(CS_ComWrp_ySignalu8Bit_ldu8);
+
+
+   /************************/
+   /* Engine shut-off time */
+   /************************/
+   /* Pt_tiEngShOff        */
+   /************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Pt_tiEngShOff(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0u;
+   }
+   /* Signal for OBD. ToDo: Add signal and verify whether state is required */
+
+
+   /************************************/
+   /* Elapsed time since engine started */
+   /************************************/
+   /* Pt_tiSnceEngStrtd                */
+   /************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Pt_tiSnceEngStrtd(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0u;
+   }
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* Signal for OBD. */
+   (void)Rte_Write_ComWrp_Outp_tSnceEngStrtd(CS_ComWrp_ySignalu16Bit_ldu16);
+
+
+
+
+
+   /****************************************************************************/
+   /*   OOOOOOOO     TTTTTTTTTTTT   HHHH      HHHH   EEEEEEEEEE   RRRRRRRR     */
+   /*   OOOOOOOO     TTTTTTTTTTTT   HHHH      HHHH   EEEEEEEEEE   RRRRRRRRRR   */
+   /* OOOO    OOOO       TTTT       HHHH      HHHH   EEEE         RRRR    RRRR */
+   /* OOOO    OOOO       TTTT       HHHH      HHHH   EEEE         RRRR    RRRR */
+   /* OOOO    OOOO       TTTT       HHHHHHHHHHHHHH   EEEEEEEE     RRRRRRRRRR   */
+   /* OOOO    OOOO       TTTT       HHHHHHHHHHHHHH   EEEEEEEE     RRRRRRR      */
+   /* OOOO    OOOO       TTTT       HHHH      HHHH   EEEE         RRRRR RRRR   */
+   /* OOOO    OOOO       TTTT       HHHH      HHHH   EEEE         RRRRR   RRRR */
+   /*   OOOOOOOO         TTTT       HHHH      HHHH   EEEEEEEEE    RRRRR   RRRR */
+   /*   OOOOOOOO         TTTT       HHHH      HHHH   EEEEEEEEE    RRRRR   RRRR */
+   /****************************************************************************/
+
+   /***************************/
+   /* Negative torque allowed */
+   /***************************/
+   /* Not available           */
+   /***************************/
+   /* Receive signal */
+   CS_ComWrp_sNegTqAllwd_lde = CS_ComWrp_NEG_TQ_ALLWD_Enabled; /* Fixed value */
+   /* Fixed value hence no factor and no offset */
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_sNegTqAllwd(CS_ComWrp_sNegTqAllwd_lde);
+
+   #ifdef RB_PROG_FLOW_MON
+      CS_RB_PROG_FLOW_COMWRP_2_END
+   #endif
+
+   #ifdef CS_RTRT
+      #define  RTRT_CS_ComWrp_Proc_100ms_END
+      #include "ComWrp_ComWrapper_rh.h"
+   #endif
+
+   return;
+
+/* ## OperationBody End */
+
+
+}
+
+
+/******************************************************************************
+Definition of the Global Function:
+   void CS_ComWrp_Proc_5ms(void)
+*******************************************************************************
+Function Description:
+Processing of DEM statuses
+
+******************************************************************************/
+void CS_ComWrp_Proc_5ms(void)
+{
+   /* ## OperationBody [0d503032-cc7e-424d-b284-16ca3eaf8f86] */
+
+   Dem_EventStatusType CS_ComWrp_yEventStatus_lde;
+
+   #ifdef CS_RTRT
+      #define  RTRT_CS_ComWrp_Proc_5ms_START
+      #include "ComWrp_ComWrapper_rh.h"
+   #endif
+
+   #ifdef RB_PROG_FLOW_MON
+      CS_RB_PROG_FLOW_COMWRP_3_START
+   #endif
+
+   /* Read event statuses from interrunnable variables and set them in DEM */
+
+   /* CRC_Eem_Edrv_Des_1 */
+   CS_ComWrp_yEventStatus_lde = Rte_IrvRead_Proc_5ms_Sfty_CS_ComWrp_yEventStatus_CRC_Eem_Edrv_Des_1_mde();
+   (void)Rte_Call_Com_E_CRC_Eem_Edrv_Des_1_SetEventStatus(CS_ComWrp_yEventStatus_lde);
+
+   /* CRC_Pt_Edrv_Des_1 */
+   CS_ComWrp_yEventStatus_lde = Rte_IrvRead_Proc_5ms_Sfty_CS_ComWrp_yEventStatus_CRC_Pt_Edrv_Des_1_mde();
+   (void)Rte_Call_Com_E_CRC_Pt_Edrv_Des_1_SetEventStatus(CS_ComWrp_yEventStatus_lde);
+
+   /* CRC_Pt_Veh_1 */
+   CS_ComWrp_yEventStatus_lde = Rte_IrvRead_Proc_5ms_Sfty_CS_ComWrp_yEventStatus_CRC_Pt_Veh_1_mde();
+   (void)Rte_Call_Com_E_CRC_Pt_Veh_1_SetEventStatus(CS_ComWrp_yEventStatus_lde);
+
+   /* SQC_Eem_Edrv_Des_1 */
+   CS_ComWrp_yEventStatus_lde = Rte_IrvRead_Proc_5ms_Sfty_CS_ComWrp_yEventStatus_SQC_Eem_Edrv_Des_1_mde();
+   (void)Rte_Call_Com_E_SQC_Eem_Edrv_Des_1_SetEventStatus(CS_ComWrp_yEventStatus_lde);
+
+   /* SQC_Pt_Edrv_Des_1 */
+   CS_ComWrp_yEventStatus_lde = Rte_IrvRead_Proc_5ms_Sfty_CS_ComWrp_yEventStatus_SQC_Pt_Edrv_Des_1_mde();
+   (void)Rte_Call_Com_E_SQC_Pt_Edrv_Des_1_SetEventStatus(CS_ComWrp_yEventStatus_lde);
+
+   /* SQC_Pt_Veh_1 */
+   CS_ComWrp_yEventStatus_lde = Rte_IrvRead_Proc_5ms_Sfty_CS_ComWrp_yEventStatus_SQC_Pt_Veh_1_mde();
+   (void)Rte_Call_Com_E_SQC_Pt_Veh_1_SetEventStatus(CS_ComWrp_yEventStatus_lde);
+
+   #ifdef RB_PROG_FLOW_MON
+      CS_RB_PROG_FLOW_COMWRP_3_END
+   #endif
+
+   #ifdef CS_RTRT
+      #define  RTRT_CS_ComWrp_Proc_5ms_END
+      #include "ComWrp_ComWrapper_rh.h"
+   #endif
+
+   return;
+
+/* ## OperationBody End */
+
+
+}
+
+/* PRQA S 5087 COMWRP_COMWRAPPER */
+#define COMWRP_STOP_SEC_CODE
+#include "ComWrp_MemMap.h"
+/* PRQA L: COMWRP_COMWRAPPER */
+
+
+/* PRQA S 5087 COMWRP_COMWRAPPER */
+#define COMWRP_START_SEC_CODE_SW23
+#include "ComWrp_MemMap.h"
+/* PRQA L: COMWRP_COMWRAPPER */
+/******************************************************************************
+Definition of the Global Function:
+   void CS_ComWrp_Proc_5ms_Sfty(void)
+*******************************************************************************
+Function Description:
+Processing of COM-signals
+
+******************************************************************************/
+
+/* many if-conditions in table-form cuse a high cyclomatic complexity (STCYC) */
+/* It doesn't make sense to split this function into subroutines to reduce cyclomatic complexity, because it will be more unreadable and increase runtime and memory */
+//METRIC STCYC EVAL: <It doesn't make sense redeuce number of statements in considered function as dividing function into small subroutines only to satisfy the METRIC, because makes it more unreadable>
+//METRIC STCAL EVAL: <It doesn't make sense split considered function into small subroutines to reduce distinct function calls only to satisfy the METRICS, because makes it more unreadable>
+//METRIC STPTH EVAL: <It doesn't make sense redeuce estimated static path count only to satisfy the METRIC, because makes it more unreadable>
+//METRIC STST3 EVAL: <It doesn't make sense redeuce number of statements in considered function as dividing function into small subroutines only to satisfy the METRIC, because makes it more unreadable>
+void CS_ComWrp_Proc_5ms_Sfty(void)
+{
+   /* ## OperationBody [0d503832-cc7e-424d-b284-16ca3eaf8f86] */
+
+   CS_ComWrp_tSIG_STATE_E           CS_ComWrp_sSignalState_lde;
+   Std_ReturnType                   CS_ComWrp_yReturnvalue_lde;
+   uint8                            CS_ComWrp_ySignalu8Bit_ldu8;
+   uint8                            CS_ComWrp_tTimeoutValue_ldu8;
+   uint16                           CS_ComWrp_ySignalu16Bit_ldu16;
+   float32                          CS_ComWrp_ySignalf32Bit_ldf32;
+   boolean                          CS_ComWrp_fCrashVld_ldb = TRUE;
+   boolean                          CS_ComWrp_fPtVehVld_ldb = TRUE;
+   boolean                          CS_ComWrp_fNeverReceivedBitsSet_ldb;
+   boolean                          CS_ComWrp_fMaxAgeExceededBitSet_ldb;
+
+   /* Signal Group */
+   CS_ComWrp_tEEM_EDRV_DES_S        CS_ComWrp_ySigGrpEemEdrvDes_lds;
+   CS_ComWrp_tPT_EDRV_DES_S         CS_ComWrp_ySigGrpPtEdrvDes_lds;
+   CS_ComWrp_tPT_VEH_S              CS_ComWrp_ySigGrpPtVeh_lds;
+
+   /* E2E */
+   Std_ReturnType                   CS_ComWrp_yReturnvalueE2E_lde;
+
+
+
+   /* PRQA S 0842 ++ */ /* This block is only for the static variable hence undef will be executed in the same block */
+
+   /* PRQA S 5087 COMWRP_COMWRAPPER */
+   #define COMWRP_START_SEC_VAR_8BIT_SW23
+   #include "ComWrp_MemMap.h"
+   /* PRQA L: COMWRP_COMWRAPPER */
+
+   /* Counter for monitoring to determine whether signal group is updated */
+   static uint8                     CS_ComWrp_zPtEdrvDes1Counter_sdu8 = 0;
+   static uint8                     CS_ComWrp_zPtVeh1Counter_sdu8 = 0;
+
+   /* PRQA S 5087 COMWRP_COMWRAPPER */
+   #define COMWRP_STOP_SEC_VAR_8BIT_SW23
+   #include "ComWrp_MemMap.h"
+   /* PRQA L: COMWRP_COMWRAPPER */
+
+   /* PRQA S 0842 -- */
+
+   #ifdef CS_RTRT
+      #define  RTRT_CS_ComWrp_Proc_5ms_Sfty_START
+      #include "ComWrp_ComWrapper_rh.h"
+   #endif
+
+   #ifdef RB_PROG_FLOW_MON
+      CS_RB_PROG_FLOW_COMWRP_4_START
+   #endif
+/**********************************************************************************************************
+$$$Value Name="SectionFiggle" Function="Render" InputArgs=" Receive Signals,null"/$$$
+Following contents are the signals receive process
+***********************************************************************************************************/
+$$$Array Context="DBCNodes"$$$
+$$$TemplateSelector Property="NodeName"$$$
+$$$Template Value="ED"$$$
+$$$Array DataSource="ReceiveMessages"$$$
+/***********************************************************************
+$$$Value Name="StandardFiggle" Function="Render"$$$
+    $$$InputArgs$$$
+        $$$InputArgValue Property="MessageName"/$$$
+        $$$InputArgValue Type="null"/$$$
+    $$$/InputArgs$$$
+$$$/Value$$$
+Following contents are the signals received from message "$$$Value Property="MessageName" /$$$".
+***********************************************************************/
+$$$Array DataSource="SignalList" LineSpace=""$$$
+    /**********************************************************
+    ValueName:$$$Value Property="SignalName" LineSpace="        " /$$$
+    ValueDescription:$$$Value Property="Comment" LineSpace="        "  /$$$
+    BitLength:$$$Value Property="SignalSize" LineSpace="        "  /$$$
+    Offset:$$$Value Property="Offset" LineSpace="        "  /$$$
+    Scale:$$$Value Property="Factor" LineSpace="        "  /$$$
+    DefaultValue:$$$Value Property="InitialValue" LineSpace="        "  /$$$
+    ***********************************************************/
+    /* Receive signal */
+    CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_$$$Value Property="SignalName"/$$$(&CS_ComWrp_ySignalu16Bit_ldu16);
+    /* Set state of signal to valid */
+    CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+    /* Determine whether signal is valid */
+    if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+    {
+        /* Signal is invalid -> change to "Signal Not Available" value */
+        //CS_ComWrp_ySignalu16Bit_ldu16 = invalid value;
+        /* Change state of signal to invalid */
+        CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+    }
+    else
+    {
+
+        /* There is no factor and no offset for this signal */
+        CS_ComWrp_ySignalf32Bit_ldf32 = (float32)CS_ComWrp_ySignalu16Bit_ldu16*$$$Value Property="Factor"/$$$F+($$$Value Property="Offset"/$$$F);        
+    }
+    /* Send value */
+    (void)Rte_Write_ComWrp_Outp_iMaxDchaCurrentEM(CS_ComWrp_ySignalf32Bit_ldf32);
+    /* Send state of signal */
+    (void)Rte_Write_ComWrp_Outp_sMaxDchaCurrentEM(CS_ComWrp_sSignalState_lde);
+  
+$$$/Array$$$
+$$$/Array$$$
+$$$/Template$$$
+$$$/TemplateSelector$$$
+$$$/Array$$$
+
+
+
+
+
+   /********************************************/
+   /* EEEEEEEEEE   EEEEEEEEEE   MMMM      MMMM */
+   /* EEEEEEEEEE   EEEEEEEEEE   MMMM      MMMM */
+   /* EEEE         EEEE         MMMMMM  MMMMMM */
+   /* EEEE         EEEE         MMMMMM  MMMMMM */
+   /* EEEEEEEE     EEEEEEEE     MMMM MMMM MMMM */
+   /* EEEEEEEE     EEEEEEEE     MMMM MMMM MMMM */
+   /* EEEE         EEEE         MMMM      MMMM */
+   /* EEEE         EEEE         MMMM      MMMM */
+   /* EEEEEEEEE    EEEEEEEEE    MMMM      MMMM */
+   /* EEEEEEEEE    EEEEEEEEE    MMMM      MMMM */
+   /********************************************/
+
+   /************************************************/
+   /* Maximum allowed current limitation from Edrv */
+   /************************************************/
+   /* Eem_iMaxEdrv                                 */
+   /************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_iMaxEdrv(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Set state of signal to valid */
+   CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 15u;
+      /* Change state of signal to invalid */
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+   /* There is no factor and no offset for this signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = (float32)CS_ComWrp_ySignalu16Bit_ldu16;
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_iMaxDchaCurrentEM(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* Send state of signal */
+   (void)Rte_Write_ComWrp_Outp_sMaxDchaCurrentEM(CS_ComWrp_sSignalState_lde);
+
+
+   /****************************************************************************/
+   /* Prediction of maximum possible current in motor operation for short time */
+   /****************************************************************************/
+   /* Eem_iMaxPredEdrv                                                         */
+   /****************************************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_iMaxPredEdrv(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 500u;
+   }
+   /* Add factor 1 and offset -200 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySignalu16Bit_ldu16) * 1.0F) + (-200.0F));
+   /* Send value */
+   /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+   (void)Rte_Write_ComWrp_Outp_iMaxPredEdrv(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* PRQA S 3110 -- */
+
+
+   /************************************************/
+   /* Minimum allowed current limitation from Edrv */
+   /************************************************/
+   /* Eem_iMinEdrv                                 */
+   /************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_iMinEdrv(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Set state of signal to valid */
+   CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 905u;
+      /* Change state of signal to invalid */
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+   /* Add factor 1 and offset 1000 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySignalu16Bit_ldu16) * 1.0F) + (-1000.0F));
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_iMaxChrgCurrentEM(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* Send state of signal */
+   (void)Rte_Write_ComWrp_Outp_sMaxChrgCurrentEM(CS_ComWrp_sSignalState_lde);
+
+
+   /********************************************************************************/
+   /* Prediction of maximum possible current in generator operation for short time */
+   /********************************************************************************/
+   /* Eem_iMinPredEdrv                                                             */
+   /********************************************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_iMinPredEdrv(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 500u;
+   }
+   /* Add factor 1 and offset -800 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySignalu16Bit_ldu16) * 1.0F) + (-800.0F));
+   /* Send value */
+   /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+   (void)Rte_Write_ComWrp_Outp_iMinPredEdrv(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* PRQA S 3110 -- */
+
+
+   /****************************/
+   /* Current request from EEM */
+   /****************************/
+   /* Eem_iReqEdrv             */
+   /****************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_iReqEdrv(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 500u;
+   }
+   /* Add factor 1 and offset -500 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySignalu16Bit_ldu16) * 1.0F) + (-500.0F));
+   /* Send value */
+   /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+   (void)Rte_Write_ComWrp_Outp_iReqEdrv(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* PRQA S 3110 -- */
+
+
+   /***************************************************/
+   /* Battery inner resistance for voltage limitation */
+   /***************************************************/
+   /* Eem_rMvbEdrv                                    */
+   /***************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_rMvbEdrv(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Set state of signal to valid */
+   CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 10u;
+      /* Change state of signal to invalid */
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+   /* Add factor 0.001 and offset 0 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySignalu16Bit_ldu16) * 0.001F) + (0.0F));
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_rHvBattChrgR(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* Send state of signal */
+   (void)Rte_Write_ComWrp_Outp_sHvBattChrgR(CS_ComWrp_sSignalState_lde);
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_rHvBattDschrgR(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* Send state of signal */
+   (void)Rte_Write_ComWrp_Outp_sHvBattDschrgR(CS_ComWrp_sSignalState_lde);
+
+
+   /*******************************************/
+   /* Maximum allowed voltage at B+-connector */
+   /*******************************************/
+   /* Eem_uMaxEdrv                            */
+   /*******************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_uMaxEdrv(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Set state of signal to valid */
+   CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 768u;
+      /* Change state of signal to invalid */
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+   /* Add factor 0,0625 and offset 0 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySignalu16Bit_ldu16) * 0.0625F) + (0.0F));
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_uMaxChrgVoltEM(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* Send state of signal */
+   (void)Rte_Write_ComWrp_Outp_sMaxChrgVoltEM(CS_ComWrp_sSignalState_lde);
+
+
+   /********************************************************************************/
+   /* Prediction of maximum possible voltage in generator operation for short time */
+   /********************************************************************************/
+   /* Eem_uMaxPredEdrv                                                             */
+   /********************************************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_uMaxPredEdrv(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 152u;
+   }
+   /* Add factor 0,25 and offset 10 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySignalu8Bit_ldu8) * 0.25F) + (10.0F));
+   /* Send value */
+   /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+   (void)Rte_Write_ComWrp_Outp_uMaxPredEdrv(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* PRQA S 3110 -- */
+
+
+   /*******************************************/
+   /* Minimum allowed voltage at B+-connector */
+   /*******************************************/
+   /* Eem_uMinEdrv                            */
+   /*******************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_uMinEdrv(&CS_ComWrp_ySignalu16Bit_ldu16);
+   /* Set state of signal to valid */
+   CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu16Bit_ldu16 = 560u;
+      /* Change state of signal to invalid */
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+   /* Add factor 0,0625 and offset 0 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySignalu16Bit_ldu16) * 0.0625F) + (0.0F));
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_uMinDchaVoltEM(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* Send state of signal */
+   (void)Rte_Write_ComWrp_Outp_sMinDchaVoltEM(CS_ComWrp_sSignalState_lde);
+
+
+   /****************************************************************************/
+   /* Prediction of minimum possible voltage in motor operation for short time */
+   /****************************************************************************/
+   /* Eem_uMinPredEdrv                                                         */
+   /****************************************************************************/
+   /* Receive signal */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_uMinPredEdrv(&CS_ComWrp_ySignalu8Bit_ldu8);
+   /* Determine whether signal is valid */
+   if ((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal is invalid -> change to "Signal Not Available" value */
+      CS_ComWrp_ySignalu8Bit_ldu8 = 192u;
+   }
+   /* Add factor 0,25 and offset 10 to signal */
+   CS_ComWrp_ySignalf32Bit_ldf32 = (((float32)CS_ComWrp_ySignalu8Bit_ldu8) * 0.25F);
+   /* Send value */
+   /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+   (void)Rte_Write_ComWrp_Outp_uMinPredEdrv(CS_ComWrp_ySignalf32Bit_ldf32);
+   /* PRQA S 3110 -- */
+
+
+   /************************************************/
+   /* SignalGroup:           ISG_Eem_Edrv_Des_1    */
+   /************************************************/
+
+   /* Store Updated Status bevore updating Signalgroup */
+   CS_ComWrp_Eem_Edrv_Des_State_tp.NewDataAvailable = Rte_IsUpdated_ComWrp_Inp_Eem_Edrv_Des_1();
+
+   /* Receive signal group */
+
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Eem_Edrv_Des_1(&CS_ComWrp_ySigGrpEemEdrvDes_lds);
+   /* Change state of signals of the signal group to valid */
+   CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+
+
+   /* E2E Check Counter and CRC */
+   /* Check if new data available and set state */
+   if (0 != *Rte_Pim_CS_ComWrp_E2EActvd())
+   {
+      /* signal name      bit width   start-bit-position   end-bit-position */
+
+      /* Eem_nrChksAct         8               0                    7       */
+      /* Eem_nrAlvCntrAct      4               8                   11       */
+      /* Eem_uDesEdrv         10              12                   21       */
+      /* Eem_stRlyMvbEdrv      2              22                   23       */
+
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_nrChksAct & 255);
+      CS_ComWrp_Eem_Edrv_Des_Data_pu8[0] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) ((CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_nrAlvCntrAct & 15) | ((CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_uDesEdrv & 15) << 4));
+      CS_ComWrp_Eem_Edrv_Des_Data_pu8[1] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (((CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_uDesEdrv & 1008) >> 4) | ((CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_stRlyMvbEdrv & 3) << 6));
+      CS_ComWrp_Eem_Edrv_Des_Data_pu8[2] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_yReturnvalueE2E_lde = E2E_P02Check(&CS_ComWrp_Eem_Edrv_Des_Config_tp, &CS_ComWrp_Eem_Edrv_Des_State_tp, &CS_ComWrp_Eem_Edrv_Des_Data_pu8[0]);
+
+      /* Check for CRC error */
+
+      if ((CS_ComWrp_Eem_Edrv_Des_State_tp.Status == E2E_P02STATUS_WRONGCRC) && (E2E_P02STATUS_REPEATED != CS_ComWrp_Eem_Edrv_Des_E2EState))
+      {
+         /* Debouncing */
+         if (CS_ComWrp_Eem_Edrv_Des_E2ECRCErrorCnt >= CS_ComWrp_Eem_Edrv_Des_1_DebE2ECRCError)
+         {
+            CS_ComWrp_Eem_Edrv_Des_E2EDeb = FALSE;
+            CS_ComWrp_Eem_Edrv_Des_E2EError = TRUE;
+            CS_ComWrp_Eem_Edrv_Des_E2EState = E2E_P02STATUS_WRONGCRC;
+            /* Set CRC DFC Error */
+            Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_CRC_Eem_Edrv_Des_1_mde(DEM_EVENT_STATUS_PREFAILED);
+         }
+
+         else
+         {
+            CS_ComWrp_Eem_Edrv_Des_E2ECRCErrorCnt = CS_ComWrp_Eem_Edrv_Des_E2ECRCErrorCnt + 1;
+            CS_ComWrp_Eem_Edrv_Des_E2EDeb = TRUE;
+         }
+      }
+      /* Check for Alive Counter Error */
+      else if
+         (((CS_ComWrp_Eem_Edrv_Des_State_tp.Status == E2E_P02STATUS_REPEATED) ||
+         (CS_ComWrp_Eem_Edrv_Des_State_tp.Status == E2E_P02STATUS_WRONGSEQUENCE)) &&
+         (E2E_P02STATUS_WRONGCRC != CS_ComWrp_Eem_Edrv_Des_E2EState))
+      {
+         /* Debounce */
+         if (CS_ComWrp_Eem_Edrv_Des_E2EAliveErrorCnt >= CS_ComWrp_Eem_Edrv_Des_1_DebE2EAliveError)
+         {
+            CS_ComWrp_Eem_Edrv_Des_E2EDeb = FALSE;
+            CS_ComWrp_Eem_Edrv_Des_E2EError = TRUE;
+            CS_ComWrp_Eem_Edrv_Des_E2EState = E2E_P02STATUS_REPEATED;
+            /* Set Alive DFC Error */
+            Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_SQC_Eem_Edrv_Des_1_mde(DEM_EVENT_STATUS_PREFAILED);
+         }
+
+         else
+         {
+            CS_ComWrp_Eem_Edrv_Des_E2EAliveErrorCnt = CS_ComWrp_Eem_Edrv_Des_E2EAliveErrorCnt + 1;
+            CS_ComWrp_Eem_Edrv_Des_E2EDeb = TRUE;
+         }
+      }
+      /* Reset Flags and Report DFC status passed */
+      else if
+         ((CS_ComWrp_Eem_Edrv_Des_State_tp.Status == E2E_P02STATUS_OK) ||
+         (CS_ComWrp_Eem_Edrv_Des_State_tp.Status == E2E_P02STATUS_OKSOMELOST))
+      {
+         CS_ComWrp_Eem_Edrv_Des_E2EError = FALSE;
+         CS_ComWrp_Eem_Edrv_Des_E2EDeb = FALSE;
+         CS_ComWrp_Eem_Edrv_Des_E2EAliveErrorCnt = 0;
+         CS_ComWrp_Eem_Edrv_Des_E2ECRCErrorCnt = 0;
+         CS_ComWrp_Eem_Edrv_Des_E2EState = E2E_P02STATUS_OK;
+         /* Heal DFCs */
+         Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_CRC_Eem_Edrv_Des_1_mde(DEM_EVENT_STATUS_PREPASSED);
+         Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_SQC_Eem_Edrv_Des_1_mde(DEM_EVENT_STATUS_PREPASSED);
+      }
+
+      else
+      {
+         /* do nothing */
+      }
+
+   }
+
+   else
+   {
+      /* E2E not active */
+      CS_ComWrp_Eem_Edrv_Des_E2EError = FALSE;
+      CS_ComWrp_Eem_Edrv_Des_E2EDeb = FALSE;
+      CS_ComWrp_Eem_Edrv_Des_E2EAliveErrorCnt = 0;
+      CS_ComWrp_Eem_Edrv_Des_E2ECRCErrorCnt = 0;
+      CS_ComWrp_Eem_Edrv_Des_E2EState = E2E_P02STATUS_OK;
+      /* PRQA S 1277 ++ */ /* This macro comes from a called library module and can't be solved in this place */
+      CS_ComWrp_yReturnvalueE2E_lde = E2E_E_OK;
+      /* PRQA S 1277 -- */
+   }
+
+   /* Determine set bits of RTE return value */
+   CS_ComWrp_fNeverReceivedBitsSet_ldb = (CS_ComWrp_yReturnvalue_lde & ((Std_ReturnType)RTE_E_NEVER_RECEIVED  )) ? TRUE : FALSE;
+   CS_ComWrp_fMaxAgeExceededBitSet_ldb = (CS_ComWrp_yReturnvalue_lde & ((Std_ReturnType)RTE_E_MAX_AGE_EXCEEDED)) ? TRUE : FALSE;
+
+   /* Determine whether signal group is valid */
+   if (    (((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde) && (FALSE == CS_ComWrp_fNeverReceivedBitsSet_ldb)) /* General L1-Error after at least one message was received */
+        || ((TRUE == CS_ComWrp_fNeverReceivedBitsSet_ldb) && (TRUE == CS_ComWrp_fMaxAgeExceededBitSet_ldb))         /* L1 - Timeout */
+        /* PRQA S 1277 ++ */ /* This macro comes from a called library module and can't be solved in this place */
+        || (((Std_ReturnType)E2E_E_OK) != CS_ComWrp_yReturnvalueE2E_lde)                                            /* E2E Error */
+        /* PRQA S 1277 -- */
+        || (TRUE == CS_ComWrp_Eem_Edrv_Des_E2EError)                                                                /* E2E Error */
+      )
+   {
+      /* Signal group is invalid -> change all signals to "Signal Not Available" value */
+      CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_nrAlvCntrAct = 0u;
+      CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_nrChksAct = 0u;
+      CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_stRlyMvbEdrv = 0u;
+      CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_uDesEdrv = 720u;
+      /* Change state of signals of the signal group to invalid */
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+
+   else if ((Std_ReturnType)RTE_E_NEVER_RECEIVED == CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal group never received -> change all signals to "Signal Not Available" value */
+      CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_nrAlvCntrAct = 0u;
+      CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_nrChksAct = 0u;
+      CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_stRlyMvbEdrv = 0u;
+      CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_uDesEdrv = 720u;
+      /* Change state of signals of the signal group to invalid */
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+
+   else
+   {
+       /* Use values from COM */
+   }
+
+   if (FALSE == CS_ComWrp_Eem_Edrv_Des_E2EDeb)
+   {
+      /**********************************************************/
+      /* Signal(Eem_stRlyMvbEdrv): State of battery main relays */
+      /**********************************************************/
+      CS_ComWrp_ySignalu8Bit_ldu8 = CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_stRlyMvbEdrv;
+      /* Send value */
+      (void)Rte_Write_ComWrp_Outp_sBattSwt(CS_ComWrp_ySignalu8Bit_ldu8);
+
+
+      /***********************************************/
+      /* Signal(Eem_uDesEdrv): Desired voltage of ED */
+      /***********************************************/
+      /* Add factor 0,0625 and offset 0 to signal */
+      CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySigGrpEemEdrvDes_lds.Eem_uDesEdrv) * 0.0625F) + (0.0F));
+      /* Send value */
+      /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+      (void)Rte_Write_ComWrp_Outp_uReqdVoltEM(CS_ComWrp_ySignalf32Bit_ldf32);
+      /* PRQA S 3110 -- */
+      /* Send state of signal */
+      (void)Rte_Write_ComWrp_Outp_sReqdVoltEM(CS_ComWrp_sSignalState_lde);
+   }
+
+   else
+   {
+      /* E2E: keep old values during debouncing */
+   }
+
+
+   /************************************************/
+   /* SignalGroup:            ISG_Pt_Edrv_Des_1    */
+   /************************************************/
+
+   /* Change state of signals of the signal group to valid */
+   CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+
+   /* Store Updated Status before updating Signalgroup */
+   CS_ComWrp_Pt_Edrv_Des_State_tp.NewDataAvailable = Rte_IsUpdated_ComWrp_Inp_Pt_Edrv_Des_1();
+
+   /* Increase counter only if signal group wasn't updated */
+   if (FALSE == CS_ComWrp_Pt_Edrv_Des_State_tp.NewDataAvailable)
+   {
+      /* Calculate timeout value for signal group Pt_Edrv_Des_1, 1 Cycle = 5ms, DAMOS value is in ms */
+      /* PRQA S 0488 ++ */ /* DAMOS variable: Pointer arithmetic allowed */
+      CS_ComWrp_tTimeoutValue_ldu8 = D_CS_ComWrp_PtEdrvDes1Timeout_XDU8(0) / CS_ComWrp_TaskCycle5ms;
+      /* PRQA S 0488 -- */
+
+      /* Determine whether counter has reached timeout value */
+      if (CS_ComWrp_tTimeoutValue_ldu8 <= CS_ComWrp_zPtEdrvDes1Counter_sdu8)
+      {
+         /* Counter has reached timeout value -> report timeout by setting state of signal to invalid and keep counter value to prevent early valid state */
+         CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+      }
+
+      else
+      {
+         /* Increase counter */
+         CS_ComWrp_zPtEdrvDes1Counter_sdu8++;
+      }
+   }
+
+   else
+   {
+      /* Reset counter */
+      CS_ComWrp_zPtEdrvDes1Counter_sdu8 = 0x00u;
+   }
+
+   /* Update signal group */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Pt_Edrv_Des_1(&CS_ComWrp_ySigGrpPtEdrvDes_lds);
+
+   /* E2E Check Counter and CRC */
+   if (0 != *Rte_Pim_CS_ComWrp_E2EActvd())
+   {
+
+      /* signal name         bit width   start-bit-position   end-bit-position */
+
+      /* Pt_nrChksAct            8              0                     7        */
+      /* Pt_nrAlvCntrAct         4              8                    11        */
+      /* Pt_stOperModDesEdrv     4             12                    15        */
+      /* Pt_tqDesEdrv           12             16                    27        */
+      /* Pt_tqMinEdrv           12             28                    39        */
+      /* Pt_nDesEdrv            13             40                    52        */
+      /* Spare                   3             53                    55        */
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nrChksAct & 255);
+      CS_ComWrp_Pt_Edrv_Des_Data_pu8[0] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) ((CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nrAlvCntrAct & 15) | ((CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv & 15) << 4));
+      CS_ComWrp_Pt_Edrv_Des_Data_pu8[1] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqDesEdrv & 255);
+      CS_ComWrp_Pt_Edrv_Des_Data_pu8[2] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (((CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqDesEdrv & 3840) >> 8) | ((CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqMinEdrv & 15) << 4));
+      CS_ComWrp_Pt_Edrv_Des_Data_pu8[3] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) ((CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqMinEdrv & 4080) >> 4);
+      CS_ComWrp_Pt_Edrv_Des_Data_pu8[4] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nDesEdrv & 255);
+      CS_ComWrp_Pt_Edrv_Des_Data_pu8[5] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (((CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nDesEdrv & 7936) >> 8) | (CS_ComWrp_SpareBit<<5) | (CS_ComWrp_SpareBit<<6) | (CS_ComWrp_SpareBit<<7));
+      CS_ComWrp_Pt_Edrv_Des_Data_pu8[6] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      /* E2E Check Counter and CRC */
+      CS_ComWrp_yReturnvalueE2E_lde = E2E_P02Check(&CS_ComWrp_Pt_Edrv_Des_Config_tp, &CS_ComWrp_Pt_Edrv_Des_State_tp, &CS_ComWrp_Pt_Edrv_Des_Data_pu8[0]);
+
+
+      /* Check for CRC error */
+      if ((CS_ComWrp_Pt_Edrv_Des_State_tp.Status == E2E_P02STATUS_WRONGCRC) && (E2E_P02STATUS_REPEATED != CS_ComWrp_Pt_Edrv_Des_E2EState))
+      {
+         /* Debouncing */
+         if (CS_ComWrp_Pt_Edrv_Des_E2ECRCErrorCnt >= CS_ComWrp_Pt_Edrv_Des_1_DebE2ECRCError)
+         {
+            CS_ComWrp_Pt_Edrv_Des_E2EDeb = FALSE;
+            CS_ComWrp_Pt_Edrv_Des_E2EError = TRUE;
+            CS_ComWrp_Pt_Edrv_Des_E2EState = E2E_P02STATUS_WRONGCRC;
+            /* Set CRC DFC Error */
+            Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_CRC_Pt_Edrv_Des_1_mde(DEM_EVENT_STATUS_PREFAILED);
+         }
+
+         else
+         {
+            CS_ComWrp_Pt_Edrv_Des_E2ECRCErrorCnt = CS_ComWrp_Pt_Edrv_Des_E2ECRCErrorCnt + 1;
+            CS_ComWrp_Pt_Edrv_Des_E2EDeb = TRUE;
+         }
+      }
+      /* Check for Alive Counter Error */
+      else if
+         (((CS_ComWrp_Pt_Edrv_Des_State_tp.Status == E2E_P02STATUS_REPEATED) ||
+         (CS_ComWrp_Pt_Edrv_Des_State_tp.Status == E2E_P02STATUS_WRONGSEQUENCE)) &&
+         (E2E_P02STATUS_WRONGCRC != CS_ComWrp_Pt_Edrv_Des_E2EState))
+      {
+         /* Debounce */
+         if (CS_ComWrp_Pt_Edrv_Des_E2EAliveErrorCnt >= CS_ComWrp_Pt_Edrv_Des_1_DebE2EAliveError)
+         {
+            CS_ComWrp_Pt_Edrv_Des_E2EDeb = FALSE;
+            CS_ComWrp_Pt_Edrv_Des_E2EError = TRUE;
+            CS_ComWrp_Pt_Edrv_Des_E2EState = E2E_P02STATUS_REPEATED;
+            /* Set Alive DFC Error */
+            Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_SQC_Pt_Edrv_Des_1_mde(DEM_EVENT_STATUS_PREFAILED);
+         }
+
+         else
+         {
+            CS_ComWrp_Pt_Edrv_Des_E2EAliveErrorCnt = CS_ComWrp_Pt_Edrv_Des_E2EAliveErrorCnt + 1;
+            CS_ComWrp_Pt_Edrv_Des_E2EDeb = TRUE;
+         }
+      }
+      /* Reset Flags and Report DFC status passed */
+      else if
+         ((CS_ComWrp_Pt_Edrv_Des_State_tp.Status == E2E_P02STATUS_OK) ||
+         (CS_ComWrp_Pt_Edrv_Des_State_tp.Status == E2E_P02STATUS_OKSOMELOST))
+      {
+         CS_ComWrp_Pt_Edrv_Des_E2EError = FALSE;
+         CS_ComWrp_Pt_Edrv_Des_E2EDeb = FALSE;
+         CS_ComWrp_Pt_Edrv_Des_E2EAliveErrorCnt = 0;
+         CS_ComWrp_Pt_Edrv_Des_E2ECRCErrorCnt = 0;
+         CS_ComWrp_Pt_Edrv_Des_E2EState = E2E_P02STATUS_OK;
+         /* Heal DFCs */
+         Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_CRC_Pt_Edrv_Des_1_mde(DEM_EVENT_STATUS_PREPASSED);
+         Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_SQC_Pt_Edrv_Des_1_mde(DEM_EVENT_STATUS_PREPASSED);
+      }
+
+      else
+      {
+         /* do nothing */
+      }
+
+   } else
+   {
+      /* E2E not active */
+      CS_ComWrp_Pt_Edrv_Des_E2EError = FALSE;
+      CS_ComWrp_Pt_Edrv_Des_E2EDeb = FALSE;
+      CS_ComWrp_Pt_Edrv_Des_E2EAliveErrorCnt = 0;
+      CS_ComWrp_Pt_Edrv_Des_E2ECRCErrorCnt = 0;
+      CS_ComWrp_Pt_Edrv_Des_E2EState = E2E_P02STATUS_OK;
+      /* PRQA S 1277 ++ */ /* This macro comes from a called library module and can't be solved in this place */
+      CS_ComWrp_yReturnvalueE2E_lde = E2E_E_OK;
+      /* PRQA S 1277 -- */
+   }
+
+   /* Determine set bits of RTE return value */
+   CS_ComWrp_fNeverReceivedBitsSet_ldb = (CS_ComWrp_yReturnvalue_lde & ((Std_ReturnType)RTE_E_NEVER_RECEIVED  )) ? TRUE : FALSE;
+   CS_ComWrp_fMaxAgeExceededBitSet_ldb = (CS_ComWrp_yReturnvalue_lde & ((Std_ReturnType)RTE_E_MAX_AGE_EXCEEDED)) ? TRUE : FALSE;
+
+   /* Determine whether signal group is valid */
+   if (    (((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde) && (FALSE == CS_ComWrp_fNeverReceivedBitsSet_ldb)) /* General L1-Error after at least one message was received */
+        || ((TRUE == CS_ComWrp_fNeverReceivedBitsSet_ldb) && (TRUE == CS_ComWrp_fMaxAgeExceededBitSet_ldb))         /* L1 - Timeout */
+        || (((CS_ComWrp_tSIG_STATE_E)CS_ComWrp_SIG_STATE_Invalid) == CS_ComWrp_sSignalState_lde)                    /* L2 - Timeout */
+        /* PRQA S 1277 ++ */ /* This macro comes from a called library module and can't be solved in this place */
+        || (((Std_ReturnType)E2E_E_OK) != CS_ComWrp_yReturnvalueE2E_lde)                                            /* E2E Error */
+        /* PRQA S 1277 -- */
+        || (TRUE == CS_ComWrp_Pt_Edrv_Des_E2EError)                                                                 /* E2E Error */
+      )
+   {
+      /* Signal group is invalid -> change all signals to "Signal Not Available" value */
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nDesEdrv = 4000u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nrAlvCntrAct = 0u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nrChksAct = 0u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv = 4u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqDesEdrv = 2017u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqMinEdrv = 1863u;
+      /* Change state of signals of the signal group to invalid */
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+
+   else if ((Std_ReturnType)RTE_E_NEVER_RECEIVED == CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal group never received -> change all signals to "Signal Not Available" value */
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nDesEdrv = 4000u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nrAlvCntrAct = 0u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nrChksAct = 0u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv = 4u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqDesEdrv = 2017u;
+      CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqMinEdrv = 1863u;
+      CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+   }
+
+   else
+   {
+       /* Use values from COM */
+   }
+
+
+
+   if (FALSE == CS_ComWrp_Pt_Edrv_Des_E2EDeb)
+   {
+      /*******************************************************/
+      /* Signal(Pt_nDesEdrv): Desired rotational speed of ED */
+      /*******************************************************/
+      /* Add factor 6 and offset -24000 to signal */
+      CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_nDesEdrv) * 6.0F) + (-24000.0F));
+      /* Send value */
+      /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+      (void)Rte_Write_ComWrp_Outp_nReqdSpeedEM(CS_ComWrp_ySignalf32Bit_ldf32);
+      /* PRQA S 3110 -- */
+      /* Send state of signal */
+      (void)Rte_Write_ComWrp_Outp_sReqdSpeedEM(CS_ComWrp_sSignalState_lde);
+
+
+      /****************************************************************/
+      /* Signal(Pt_stOperModDesEdrv): Desired operation mode from PT  */
+      /****************************************************************/
+      /* There is no factor and no offset for this signal */
+      /* Send value */
+
+      if (   ((uint8)CS_ComWrp_EM_MODE_Idle    != CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv)
+          && ((uint8)CS_ComWrp_EM_MODE_Torque  != CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv)
+          && ((uint8)CS_ComWrp_EM_MODE_VoltStd != CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv)
+          && ((uint8)CS_ComWrp_EM_MODE_Speed   != CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv)
+          && ((uint8)CS_ComWrp_EM_MODE_Start   != CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv)
+         )
+      {
+         CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv = CS_ComWrp_EM_MODE_Idle;
+      }
+      CS_ComWrp_ySignalu8Bit_ldu8 = CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_stOperModDesEdrv;
+      (void)Rte_Write_ComWrp_Outp_yReqdModeEM(CS_ComWrp_ySignalu8Bit_ldu8);
+      /* Send state of signal */
+      (void)Rte_Write_ComWrp_Outp_sSigReqdModeEM(CS_ComWrp_sSignalState_lde);
+
+      /****************************************************************/
+      /* Signal(Pt_tqDesEdrv): Desired torque of EDT                  */
+      /****************************************************************/
+      /* Add factor 0,1 and offset -200 to signal */
+      CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqDesEdrv) * 0.1F) + (-200.0F));
+      /* Send value */
+      /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+      (void)Rte_Write_ComWrp_Outp_mReqdTorqueEM(CS_ComWrp_ySignalf32Bit_ldf32);
+      /* PRQA S 3110 -- */
+      /* Send state of signal */
+      (void)Rte_Write_ComWrp_Outp_sReqdTorqueEM(CS_ComWrp_sSignalState_lde);
+      /* Send value */
+      /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+      (void)Rte_Write_ComWrp_Outp_mMaxTorqueEM(CS_ComWrp_ySignalf32Bit_ldf32);
+      /* PRQA S 3110 -- */
+      /* Send state of signal */
+      (void)Rte_Write_ComWrp_Outp_sMaxTorqueEM(CS_ComWrp_sSignalState_lde);
+
+      /*******************************************************************/
+      /* Signal(Pt_tqMinEdrv): Minimum allowed (generator) torque for ED */
+      /*******************************************************************/
+      /* Add factor 0,1 and offset -200 to signal */
+      CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySigGrpPtEdrvDes_lds.Pt_tqMinEdrv) * 0.1F) + (-200.0F));
+      /* Send value */
+      /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+      (void)Rte_Write_ComWrp_Outp_mMinTorqueEM(CS_ComWrp_ySignalf32Bit_ldf32);
+      /* PRQA S 3110 -- */
+      /* Send state of signal */
+      (void)Rte_Write_ComWrp_Outp_sMinTorqueEM(CS_ComWrp_sSignalState_lde);
+   }
+   else
+   {
+      /* E2E: keep old values during debouncing */
+   }
+
+
+   /************************************************/
+   /* SignalGroup:                ISG_Pt_Veh_1     */
+   /************************************************/
+   /* Receive signal group */
+
+   /* Change state of signals of the signal group to valid */
+   CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
+
+   /* Store Updated Status bevor updating Signalgroup */
+   CS_ComWrp_Pt_Veh_State_tp.NewDataAvailable = Rte_IsUpdated_ComWrp_Inp_Pt_Veh_1();
+
+   /* Increase counter only if signal group wasn't updated */
+   if (FALSE == CS_ComWrp_Pt_Veh_State_tp.NewDataAvailable)
+   {
+      /* Calculate timeout value for signal group Pt_Veh_1, 1 Cycle = 5ms, DAMOS value is in ms */
+      /* PRQA S 0488 ++ */ /* DAMOS variable:  pointer arithmetic allowed */
+      CS_ComWrp_tTimeoutValue_ldu8 = D_CS_ComWrp_PtVeh1Timeout_XDU8(0) / CS_ComWrp_TaskCycle5ms;
+      /* PRQA S 0488 -- */
+
+      /* Determine whether counter has reached timeout value */
+      if (CS_ComWrp_tTimeoutValue_ldu8 <= CS_ComWrp_zPtVeh1Counter_sdu8)
+      {
+         /* Counter has reached timeout value -> report timeout by setting state of signal to invalid and keep counter value to prevent early valid state */
+         CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Invalid;
+      }
+
+      else
+      {
+         /* Increase counter */
+         CS_ComWrp_zPtVeh1Counter_sdu8++;
+      }
+   }
+
+   else
+   {
+      /* Reset counter */
+      CS_ComWrp_zPtVeh1Counter_sdu8 = 0x00u;
+   }
+
+   /* Update signal group */
+   CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_Pt_Veh_1(&CS_ComWrp_ySigGrpPtVeh_lds);
+
+   /* E2E Check Counter and CRC */
+   if (0 != *Rte_Pim_CS_ComWrp_E2EActvd())
+   {
+      /* signal name      bit width   start-bit-position   end-bit-position */
+
+      /* Pt_nrChksIgn        8                 0                   7        */
+      /* Pt_nrAlvCntrIgn     4                 8                  11        */
+      /* Pt_stIgnSwt         3                12                  14        */
+      /* Spare               1                15                  15        */
+      /* Pt_nEng            14                16                  29        */
+      /* Pt_vVeh            12                30                  41        */
+      /* Pt_tAmbEdrv         8                42                  49        */
+      /* Pt_tiEdrvShOff     12                50                  61        */
+      /* Pt_flgCrash         1                62                  62        */
+      /* Spare               1                63                  63        */
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (CS_ComWrp_ySigGrpPtVeh_lds.Pt_nrChksIgn & 255);
+      CS_ComWrp_Pt_Veh_Data_pu8[0] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) ((CS_ComWrp_ySigGrpPtVeh_lds.Pt_nrAlvCntrIgn & 15) | ((CS_ComWrp_ySigGrpPtVeh_lds.Pt_stIgnSwt & 7) << 4) | (CS_ComWrp_SpareBit << 7));
+      CS_ComWrp_Pt_Veh_Data_pu8[1] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (CS_ComWrp_ySigGrpPtVeh_lds.Pt_nEng & 255);
+      CS_ComWrp_Pt_Veh_Data_pu8[2] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (((CS_ComWrp_ySigGrpPtVeh_lds.Pt_nEng & 16128) >> 8) | ((CS_ComWrp_ySigGrpPtVeh_lds.Pt_vVeh & 3) << 6));
+      CS_ComWrp_Pt_Veh_Data_pu8[3] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) ((CS_ComWrp_ySigGrpPtVeh_lds.Pt_vVeh & 1020) >> 2);
+      CS_ComWrp_Pt_Veh_Data_pu8[4] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (((CS_ComWrp_ySigGrpPtVeh_lds.Pt_vVeh & 3072) >> 10) | ((CS_ComWrp_ySigGrpPtVeh_lds.Pt_tAmbEdrv & 63) << 2));
+      CS_ComWrp_Pt_Veh_Data_pu8[5] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (((CS_ComWrp_ySigGrpPtVeh_lds.Pt_tAmbEdrv & 192) >> 6) | ((CS_ComWrp_ySigGrpPtVeh_lds.Pt_tiEdrvShOff & 63) << 2));
+      CS_ComWrp_Pt_Veh_Data_pu8[6] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      CS_ComWrp_ySignalu16Bit_ldu16 = 0;
+      CS_ComWrp_ySignalu16Bit_ldu16 = (uint16) (((CS_ComWrp_ySigGrpPtVeh_lds.Pt_tiEdrvShOff & 4032) >> 6) | ((CS_ComWrp_ySigGrpPtVeh_lds.Pt_flgCrash & 1) << 6) | (CS_ComWrp_SpareBit << 7));
+      CS_ComWrp_Pt_Veh_Data_pu8[7] = (uint8) CS_ComWrp_ySignalu16Bit_ldu16;
+
+      /* E2E Check Counter and CRC */
+      CS_ComWrp_yReturnvalueE2E_lde = E2E_P02Check(&CS_ComWrp_Pt_Veh_Config_tp, &CS_ComWrp_Pt_Veh_State_tp, &CS_ComWrp_Pt_Veh_Data_pu8[0]);
+
+
+      /* Check for CRC error */
+      if ((CS_ComWrp_Pt_Veh_State_tp.Status == E2E_P02STATUS_WRONGCRC) && (E2E_P02STATUS_REPEATED != CS_ComWrp_Pt_Veh_E2EState))
+      {
+         /* Debouncing */
+         if (CS_ComWrp_Pt_Veh_E2ECRCErrorCnt >= CS_ComWrp_Pt_Veh_1_DebE2ECRCError)
+         {
+            CS_ComWrp_Pt_Veh_E2EDeb = FALSE;
+            CS_ComWrp_Pt_Veh_E2EError = TRUE;
+            CS_ComWrp_Pt_Veh_E2EState = E2E_P02STATUS_WRONGCRC;
+            /* Set CRC DFC Error */
+            Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_CRC_Pt_Veh_1_mde(DEM_EVENT_STATUS_PREFAILED);
+         } else
+         {
+            CS_ComWrp_Pt_Veh_E2ECRCErrorCnt = CS_ComWrp_Pt_Veh_E2ECRCErrorCnt + 1;
+            CS_ComWrp_Pt_Veh_E2EDeb = TRUE;
+         }
+      }
+      /* Check for Alive Counter Error */
+      else if
+         (((CS_ComWrp_Pt_Veh_State_tp.Status == E2E_P02STATUS_REPEATED) ||
+         (CS_ComWrp_Pt_Veh_State_tp.Status == E2E_P02STATUS_WRONGSEQUENCE)) &&
+         (E2E_P02STATUS_WRONGCRC != CS_ComWrp_Pt_Veh_E2EState))
+      {
+         /* Debounce */
+         if (CS_ComWrp_Pt_Veh_E2EAliveErrorCnt >= CS_ComWrp_Pt_Veh_1_DebE2EAliveError)
+         {
+            CS_ComWrp_Pt_Veh_E2EDeb = FALSE;
+            CS_ComWrp_Pt_Veh_E2EError = TRUE;
+            CS_ComWrp_Pt_Veh_E2EState = E2E_P02STATUS_REPEATED;
+            /* Set Alive DFC Error */
+            Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_SQC_Pt_Veh_1_mde(DEM_EVENT_STATUS_PREFAILED);
+         } else
+         {
+            CS_ComWrp_Pt_Veh_E2EAliveErrorCnt = CS_ComWrp_Pt_Veh_E2EAliveErrorCnt + 1;
+            CS_ComWrp_Pt_Veh_E2EDeb = TRUE;
+         }
+      }
+      /* Reset Flags and Report DFC status passed */
+      else if
+         ((CS_ComWrp_Pt_Veh_State_tp.Status == E2E_P02STATUS_OK) ||
+         (CS_ComWrp_Pt_Veh_State_tp.Status == E2E_P02STATUS_OKSOMELOST))
+      {
+         CS_ComWrp_Pt_Veh_E2EError = FALSE;
+         CS_ComWrp_Pt_Veh_E2EDeb = FALSE;
+         CS_ComWrp_Pt_Veh_E2EAliveErrorCnt = 0;
+         CS_ComWrp_Pt_Veh_E2ECRCErrorCnt = 0;
+         CS_ComWrp_Pt_Veh_E2EState = E2E_P02STATUS_OK;
+         /* Heal DFCs */
+         Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_CRC_Pt_Veh_1_mde(DEM_EVENT_STATUS_PREPASSED);
+         Rte_IrvWrite_Proc_5ms_CS_ComWrp_yEventStatus_SQC_Pt_Veh_1_mde(DEM_EVENT_STATUS_PREPASSED);
+      } else
+      {
+         /* do nothing */
+      }
+   } else
+   {
+      /* E2E not active */
+      CS_ComWrp_Pt_Veh_E2EError = FALSE;
+      CS_ComWrp_Pt_Veh_E2EDeb = FALSE;
+      CS_ComWrp_Pt_Veh_E2EAliveErrorCnt = 0;
+      CS_ComWrp_Pt_Veh_E2ECRCErrorCnt = 0;
+      CS_ComWrp_Pt_Veh_E2EState = E2E_P02STATUS_OK;
+      /* PRQA S 1277 ++ */ /* This macro comes from a called library module and can't be solved in this place */
+      CS_ComWrp_yReturnvalueE2E_lde = E2E_E_OK;
+      /* PRQA S 1277 -- */
+   }
+
+   /* Determine set bits of RTE return value */
+   CS_ComWrp_fNeverReceivedBitsSet_ldb = (CS_ComWrp_yReturnvalue_lde & ((Std_ReturnType)RTE_E_NEVER_RECEIVED  )) ? TRUE : FALSE;
+   CS_ComWrp_fMaxAgeExceededBitSet_ldb = (CS_ComWrp_yReturnvalue_lde & ((Std_ReturnType)RTE_E_MAX_AGE_EXCEEDED)) ? TRUE : FALSE;
+
+   /* Determine whether signal group is valid */
+   if (    (((Std_ReturnType)E_OK != CS_ComWrp_yReturnvalue_lde) && (FALSE == CS_ComWrp_fNeverReceivedBitsSet_ldb)) /* General L1-Error after at least one message was received */
+        || ((TRUE == CS_ComWrp_fNeverReceivedBitsSet_ldb) && (TRUE == CS_ComWrp_fMaxAgeExceededBitSet_ldb))         /* L1 - Timeout */
+        || (((CS_ComWrp_tSIG_STATE_E)CS_ComWrp_SIG_STATE_Invalid) == CS_ComWrp_sSignalState_lde)                    /* L2 - Timeout */
+      )
+   {
+      /* Timeout -> Signal group is invalid -> change all signals to "Signal Not Available" value */
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nEng = 16383u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nrAlvCntrIgn = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nrChksIgn = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_stIgnSwt = 0;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_tAmbEdrv = 160u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_tiEdrvShOff = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_vVeh = 4095u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_flgCrash = 1;
+
+      if (((CS_ComWrp_tSIG_STATE_E)CS_ComWrp_SIG_STATE_Invalid) == CS_ComWrp_sSignalState_lde)
+      {
+         CS_ComWrp_fCrashVld_ldb = FALSE;
+      }
+      else
+      {
+         CS_ComWrp_fCrashVld_ldb = TRUE;
+      }
+
+      /* Remember that the message is invalid for the IgnSwt evaluation */
+      CS_ComWrp_fPtVehVld_ldb = FALSE;
+   }
+
+   else if (
+            /* PRQA S 1277 ++ */ /* This macro comes from a called library module and can't be solved in this place */
+            (((Std_ReturnType)E2E_E_OK) != CS_ComWrp_yReturnvalueE2E_lde)                                               /* E2E Error */
+            /* PRQA S 1277 -- */
+            || (TRUE == CS_ComWrp_Pt_Veh_E2EError)                                                                      /* E2E Error */
+           )
+   {
+      /* E2E-Error -> Signal group is invalid -> change all signals to "Signal Not Available" value */
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nEng = 16383u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nrAlvCntrIgn = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nrChksIgn = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_stIgnSwt = 0;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_tAmbEdrv = 160u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_tiEdrvShOff = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_vVeh = 4095u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_flgCrash = 1;
+
+      if (FALSE == CS_ComWrp_Pt_Veh_E2EDeb)
+      {
+         CS_ComWrp_fCrashVld_ldb = FALSE;
+      }
+      else
+      {
+         CS_ComWrp_fCrashVld_ldb = TRUE;
+      }
+
+      /* Remember that the message is invalid for the IgnSwt evaluation */
+      CS_ComWrp_fPtVehVld_ldb = FALSE;
+   }
+
+   else if ((Std_ReturnType)RTE_E_NEVER_RECEIVED == CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Signal group never received -> change all signals to "Signal Not Available" value */
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nEng = 16383u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nrAlvCntrIgn = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_nrChksIgn = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_stIgnSwt = 0;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_tAmbEdrv = 160u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_tiEdrvShOff = 0u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_vVeh = 4095u;
+      CS_ComWrp_ySigGrpPtVeh_lds.Pt_flgCrash = 0;
+      CS_ComWrp_fCrashVld_ldb = TRUE;
+
+      /* Remember that the message is invalid for the IgnSwt evaluation */
+      CS_ComWrp_fPtVehVld_ldb = FALSE;
+   }
+
+   else
+   {
+       /* Use values from COM */
+   }
+
+   /*******************************************************/
+   /* Signal(Pt_nEng): Rotational speed                   */
+   /*******************************************************/
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* Signal for OBD. */
+   CS_ComWrp_ySignalu16Bit_ldu16 = ((uint16)CS_ComWrp_ySigGrpPtVeh_lds.Pt_nEng);
+   (void)Rte_Write_ComWrp_Outp_nEng(CS_ComWrp_ySignalu16Bit_ldu16);
+
+
+   /******************************/
+   /* Crash detection in vehicle */
+   /******************************/
+   /* Pt_flgCrash                */
+   /******************************/
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   CS_ComWrp_ySignalu8Bit_ldu8 = ((uint8)CS_ComWrp_ySigGrpPtVeh_lds.Pt_flgCrash);
+   (void)Rte_Write_ComWrp_Outp_fCrash(CS_ComWrp_ySignalu8Bit_ldu8);
+   (void)Rte_Write_ComWrp_Outp_fCrashVld(CS_ComWrp_fCrashVld_ldb);
+
+
+   /*****************************************************************/
+   /* Signal(Pt_nrAlvCntrIgn): Sequence counter for ignition switch */
+   /*****************************************************************/
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* ToDo: Add signal and verify whether state is required */
+
+   /*****************************************************************/
+   /* Signal(Pt_nrChksIgn): Checksum for Ignition state switch      */
+   /*****************************************************************/
+   /* There is no factor and no offset for this signal */
+   /* Send value */
+   /* ToDo: Add signal and verify whether state is required */
+
+   /***********************************************************************************/
+   /* Signal(Pt_stIgnSwt): Ignition switch state for activation/deactivation of ED    */
+   /***********************************************************************************/
+   /* There is no factor and no offset for this signal */
+   if (TRUE == CS_ComWrp_Pt_Veh_State_tp.NewDataAvailable)
+   {
+
+      if ( (TRUE == CS_ComWrp_fPtVehVld_ldb) && (FALSE == CS_ComWrp_Pt_Veh_E2EDeb))
+      {
+
+         if (((uint8)0x2U == CS_ComWrp_ySigGrpPtVeh_lds.Pt_stIgnSwt) || ((uint8)0x4U == CS_ComWrp_ySigGrpPtVeh_lds.Pt_stIgnSwt) || ((uint8)0x5U == CS_ComWrp_ySigGrpPtVeh_lds.Pt_stIgnSwt))
+         {
+            /*Send Ignition signal -> ON */
+            (void)Rte_Write_ComWrp_Outp_sIgnState(CS_ComWrp_IGN_STATE_On);
+         }
+         else
+         {
+            /*Send Ignition signal -> OFF */
+            (void)Rte_Write_ComWrp_Outp_sIgnState(CS_ComWrp_IGN_STATE_Off);
+         }
+      }
+      else
+      {
+         /* Signal is invalid -> keep last value */
+      }
+
+
+   }
+   else if((Std_ReturnType)RTE_E_NEVER_RECEIVED == CS_ComWrp_yReturnvalue_lde)
+   {
+      /* Only in case no message received previously  */
+      /*Send Ignition signal as unknown */
+      (void)Rte_Write_ComWrp_Outp_sIgnState(CS_ComWrp_IGN_STATE_Ukwn);
+   }
+   else
+   {
+      /*No new Data --> Keep last value */
+   }
+
+   /* E2E */
+   if (FALSE == CS_ComWrp_Pt_Veh_E2EDeb)
+   {
+
+      /***********************************************************************************/
+      /* Signal(Pt_tAmbEdrv): Edrv ambient temperature                                   */
+      /***********************************************************************************/
+      /* Add factor 1 and offset -40 to signal */
+      CS_ComWrp_ySignalf32Bit_ldf32 = ((((float32)CS_ComWrp_ySigGrpPtVeh_lds.Pt_tAmbEdrv) * 1.0F) + (-40.0F));
+      /* Send value */
+      (void)Rte_Write_ComWrp_Outp_cOutdAirTemp(CS_ComWrp_ySignalf32Bit_ldf32);
+      /* Send state of signal */
+      (void)Rte_Write_ComWrp_Outp_sOutdAirTemp(CS_ComWrp_sSignalState_lde);
+
+      /***********************************************************************************/
+      /* Signal(Pt_tiEdrvShOff): Edrv shut-off time                                      */
+      /***********************************************************************************/
+      /* There is no factor and no offset for this signal */
+      CS_ComWrp_ySignalf32Bit_ldf32 = (float32)CS_ComWrp_ySigGrpPtVeh_lds.Pt_tiEdrvShOff;
+      /* Send value */
+      /* PRQA S 3110 ++ */ /* This warning is caused by RTE call and can't be solved in this place */
+      (void)Rte_Write_ComWrp_Outp_tPtShutOffTi(CS_ComWrp_ySignalf32Bit_ldf32);
+      /* PRQA S 3110 -- */
+      /* Send state of signal */
+      (void)Rte_Write_ComWrp_Outp_sSigPtShutOffTi(CS_ComWrp_sSignalState_lde);
+
+      /***********************************************************************************/
+      /* Signal(Pt_vVeh): Displayed vehicle speed                                        */
+      /***********************************************************************************/
+      /* Add factor 0.1 and offset 0 to signal */
+      CS_ComWrp_ySignalf32Bit_ldf32 = (((float32)CS_ComWrp_ySigGrpPtVeh_lds.Pt_vVeh) * 0.1F) + (0.0F);
+
+      /* Send value */
+      (void)Rte_Write_ComWrp_Outp_vVeh(CS_ComWrp_ySignalf32Bit_ldf32);
+   }
+   else
+   {
+      /* E2E: keep last value during debouncing */
+   }
+
+   /* Call WdgM for Program Flow Monitoring */
+   Rte_Call_WdgM_AliveSupervision_CheckpointReached();
+
+   #ifdef RB_PROG_FLOW_MON
+      CS_RB_PROG_FLOW_COMWRP_4_END
+   #endif
+
+   #ifdef CS_RTRT
+      #define  RTRT_CS_ComWrp_Proc_5ms_Sfty_END
+      #include "ComWrp_ComWrapper_rh.h"
+   #endif
+
+   return;
+
+   /* ## OperationBody End */
+
+}
+
+
+/* PRQA S 5087 COMWRP_COMWRAPPER */
+#define COMWRP_STOP_SEC_CODE_SW23
+#include "ComWrp_MemMap.h"
+/* PRQA L: COMWRP_COMWRAPPER */
+$$$/Content$$$
