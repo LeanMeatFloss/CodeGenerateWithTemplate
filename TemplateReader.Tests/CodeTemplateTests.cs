@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using NetCoreSystemEnvHelper;
 using Xunit;
 namespace TemplateReader.Tests
@@ -23,13 +25,13 @@ namespace TemplateReader.Tests
             CodeTemplate template = (new CodeTemplate (file)).ReadTemplate ();
             Assert.Equal (1, template.Root.ChildNodeList.Count);
             Assert.Equal (3, template.Root.ChildNodeList[0].ChildNodeList.Count);
+
         }
 
         [Fact]
         public void Test3 ()
         {
             string file = resourcesFilePath + "TemplateTest3.test";
-
             CodeTemplate template = (new CodeTemplate (file)).ReadTemplate ();
             TreeParser parser = new TreeParser ();
             var res = parser.PraseTemplate (template);

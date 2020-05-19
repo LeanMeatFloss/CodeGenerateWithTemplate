@@ -4,6 +4,58 @@ $$$Instance Name="DBCNodes" Type="DBCFileParser" Function="ParserNodesFromFile" 
 $$$Instance Name="StandardFiggle" Type="FiggleFonts" Property="Standard" Path="Resources/TemplateReader.Tests.Resources/Dlls" /$$$
 $$$Instance Name="SectionFiggle" Type="FiggleFonts" Property="Colossal" Path="Resources/TemplateReader.Tests.Resources/Dlls" /$$$
 $$$Instance Name="LabelFiggle" Type="FiggleFonts" Property="FourTops" Path="Resources/TemplateReader.Tests.Resources/Dlls" /$$$
+$$$Instance Name="Regex" Type="Regex" Method="Matches"  Load="System.Text.RegularExpressions"/$$$
+$$$Instance Name="IsMatch" Type="Regex" Method="IsMatch"  Load="System.Text.RegularExpressions"/$$$
+$$$Instance Name="SignalMapping" Type="ExcelConfigureCollection" Function="GetInstance" Path="Resources/TemplateReader.Tests.Resources/Dlls" $$$
+   $$$InputArgs$$$
+      $$$InputArgValue Value="C:\Users\ITQ2CS\rtc_sandbox\temp\01_ApplLyr\SysCtrl\ComWrp\doc\ComWrp_Signal mapping.xlsx"/$$$
+      $$$InputArgValue Value="320G10B0101"/$$$
+      $$$InputArgValue Type="int" Value="1"/$$$
+      $$$InputArgValue Type="int" Value="1"/$$$
+      $$$InputArgValue Type="int" Value="2"/$$$
+      $$$InputArgValue Type="bool" Value="true"/$$$
+      $$$InputArgValue Type="int" Value="17"/$$$
+      $$$InputArgValue Type="null" /$$$
+   $$$/InputArgs$$$
+$$$/Instance$$$
+$$$Template Name="TransferRawValueSelection"$$$
+   $$$TemplateSelector Name="SignalMapping" Property="Value"$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Property="SignalName"/$$$
+      $$$/IndexArgs$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Value="Raw Type"/$$$
+      $$$/IndexArgs$$$
+      $$$Template Value="uint16"$$$$$$Value Value="CS_ComWrp_ySignalu16Bit_ldu16"/$$$$$$/Template$$$
+      $$$Template Value="uint8"$$$$$$Value Value="CS_ComWrp_ySignalu8Bit_ldu8"/$$$$$$/Template$$$
+      $$$Template Value="uint32"$$$$$$Value Value="CS_ComWrp_ySignalu32Bit_ldu32"/$$$$$$/Template$$$
+   $$$/TemplateSelector$$$
+$$$/Template$$$
+$$$Template Name="TransferOutValueSelection"$$$
+   $$$TemplateSelector Name="SignalMapping" Property="Value"$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Property="SignalName"/$$$
+      $$$/IndexArgs$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Value="Transfer Type"/$$$
+      $$$/IndexArgs$$$
+      $$$Template Value="float32"$$$$$$Value Value="CS_ComWrp_ySignalf32Bit_ldf32"/$$$$$$/Template$$$
+      $$$Template Value="CS_ComWrp_tSTATE_BATT_SWT_E"$$$$$$Value Value="CS_ComWrp_tNEG_TQ_ALLWD_Eu8Bit_ldu8"/$$$$$$/Template$$$
+      $$$Template Value="CS_ComWrp_tIGN_STATE_E"$$$$$$Value Value="CS_ComWrp_tIGN_STATE_Eu8Bit_ldu8"/$$$$$$/Template$$$
+      $$$Template Value="CS_ComWrp_tEM_MODE_E"$$$$$$Value Value="CS_ComWrp_tEM_MODE_Eu8Bit_ldu8"/$$$$$$/Template$$$
+      $$$Template Value="CS_ComWrp_tNEG_TQ_ALLWD_E"$$$$$$Value Value="CS_ComWrp_tNEG_TQ_ALLWD_Eu8Bit_ldu8"/$$$$$$/Template$$$
+   $$$/TemplateSelector$$$
+$$$/Template$$$
+$$$Template Name="TransferType"$$$
+   $$$Value Name="SignalMapping" Property="Value"$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Property="SignalName"/$$$
+      $$$/IndexArgs$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Value="Transfer Type"/$$$
+      $$$/IndexArgs$$$      
+   $$$/Value$$$
+$$$/Template$$$
 $$$/Resources$$$
 /* $START_RBHEADER$ ********************************************************
    *************************************************************************
@@ -788,6 +840,12 @@ void CS_ComWrp_Proc_5ms_Sfty(void)
 {
    /* ## OperationBody [0d503832-cc7e-424d-b284-16ca3eaf8f86] */
 
+   /* Setup Partial Variables for Receiving CAN Raw Signals*/
+   CS_ComWrp_tSTATE_BATT_SWT_E      CS_ComWrp_tNEG_TQ_ALLWD_Eu8Bit_ldu8;
+   CS_ComWrp_tIGN_STATE_E           CS_ComWrp_tIGN_STATE_Eu8Bit_ldu8;
+   CS_ComWrp_tEM_MODE_E            CS_ComWrp_tEM_MODE_Eu8Bit_ldu8;
+   CS_ComWrp_tNEG_TQ_ALLWD_E        CS_ComWrp_tNEG_TQ_ALLWD_Eu8Bit_ldu8;
+
    CS_ComWrp_tSIG_STATE_E           CS_ComWrp_sSignalState_lde;
    Std_ReturnType                   CS_ComWrp_yReturnvalue_lde;
    uint8                            CS_ComWrp_ySignalu8Bit_ldu8;
@@ -862,7 +920,7 @@ $$$Array DataSource="SignalList" LineSpace=""$$$
     DefaultValue:$$$Value Property="InitialValue" LineSpace="        "  /$$$
     ***********************************************************/
     /* Receive signal */
-    CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_$$$Value Property="SignalName"/$$$(&CS_ComWrp_ySignalu16Bit_ldu16);
+    CS_ComWrp_yReturnvalue_lde = Rte_Read_ComWrp_Inp_$$$Value Property="SignalName"/$$$(&$$$Template Name="TransferRawValueSelection"/$$$);
     /* Set state of signal to valid */
     CS_ComWrp_sSignalState_lde = CS_ComWrp_SIG_STATE_Valid;
     /* Determine whether signal is valid */
@@ -875,21 +933,172 @@ $$$Array DataSource="SignalList" LineSpace=""$$$
     }
     else
     {
-
-        /* There is no factor and no offset for this signal */
-        CS_ComWrp_ySignalf32Bit_ldf32 = (float32)CS_ComWrp_ySignalu16Bit_ldu16*$$$Value Property="Factor"/$$$F+($$$Value Property="Offset"/$$$F);        
+       $$$TemplateSelector Name="SignalMapping" Property="Value"$$$
+         $$$IndexArgs$$$
+            $$$InputArgValue Property="SignalName"/$$$
+         $$$/IndexArgs$$$
+         $$$IndexArgs$$$
+            $$$InputArgValue Value="Internal signal"/$$$
+         $$$/IndexArgs$$$
+         $$$Template Value="n/a"$$$
+         /* Signal is not used therefore no need to map*/
+         $$$/Template$$$
+         $$$Template Value="not used"$$$
+         /* Signal is not used therefore no need to map*/
+         $$$/Template$$$
+         $$$Template Value="default"$$$
+       
+       $$$TemplateSelector Name="IsMatch" Function=""$$$
+         $$$InputArgs$$$
+            $$$InputArgValue Name="SignalMapping" Property="Value"$$$
+               $$$IndexArgs$$$
+                  $$$InputArgValue Property="SignalName"/$$$
+               $$$/IndexArgs$$$
+               $$$IndexArgs$$$
+                  $$$InputArgValue Value="Values (physical)"/$$$
+               $$$/IndexArgs$$$
+            $$$/InputArgValue$$$
+            $$$InputArgValue Value="([\S]+)[\s]*=[\s]*([\S]+)"/$$$
+         $$$/InputArgs$$$
+         $$$Template Value="true" Type="bool"$$$
+      /* The signal is an enumeration need to be mapped*/
+         switch($$$Template Name="TransferRawValueSelection"/$$$)
+         {
+            $$$Array Name="Regex" Function=""$$$
+               $$$InputArgs$$$
+                  $$$InputArgValue Name="SignalMapping" Property="Value"$$$
+                     $$$IndexArgs$$$
+                        $$$InputArgValue Property="SignalName"/$$$
+                     $$$/IndexArgs$$$
+                     $$$IndexArgs$$$
+                        $$$InputArgValue Value="Values (physical)"/$$$
+                     $$$/IndexArgs$$$
+                  $$$/InputArgValue$$$
+                  $$$InputArgValue Value="([\S]+)[\s]*=[\s]*([\S]+)"/$$$
+               $$$/InputArgs$$$
+               $$$TemplateSelector Property="Value" Path="Groups" Index="1"$$$
+                  $$$Template Value="others"$$$
+            default:
+               $$$Template Context="Parent" Name="TransferOutValueSelection"/$$$=$$$Value Property="Value" Path="Groups" Index="2"/$$$;
+               break;
+                  $$$/Template$$$
+                  $$$Template Value="default"$$$
+            case $$$Value Property="Value" Path="Groups" Index="1"/$$$:
+               $$$Template Context="Parent" Name="TransferOutValueSelection"/$$$=$$$Value Property="Value" Path="Groups" Index="2"/$$$;
+               break;
+                  $$$/Template$$$
+               $$$/TemplateSelector$$$         
+            $$$/Array$$$  
+         }
+         $$$/Template$$$
+         $$$Template Value="default"$$$     
+        /* Transform the signal to $$$Template Name="TransferType"/$$$*/
+        CS_ComWrp_ySignalf32Bit_ldf32 = ($$$Template Name="TransferType"/$$$)$$$Template Name="TransferRawValueSelection" Property="Value"/$$$*$$$Value Property="Factor"/$$$+($$$Value Property="Offset"/$$$);  
+         $$$/Template$$$      
+      $$$/TemplateSelector$$$
+      $$$/Template$$$
+      $$$/TemplateSelector$$$
     }
-    /* Send value */
-    (void)Rte_Write_ComWrp_Outp_iMaxDchaCurrentEM(CS_ComWrp_ySignalf32Bit_ldf32);
+   $$$TemplateSelector Name="SignalMapping" Property="Value"$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Property="SignalName"/$$$
+      $$$/IndexArgs$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Value="Internal signal"/$$$
+      $$$/IndexArgs$$$
+      $$$Template Value="n/a"/$$$
+      $$$Template Value="not used"$$$
+      /*Signal not used*/
+      $$$/Template$$$
+      $$$Template Type="null"/$$$
+      $$$Template Value="default" $$$
+         $$$Array Name="Regex" Function=""$$$
+            $$$InputArgs$$$
+               $$$InputArgValue Name="SignalMapping" Property="Value"$$$
+                  $$$IndexArgs$$$
+                     $$$InputArgValue Property="SignalName"/$$$
+                  $$$/IndexArgs$$$
+                  $$$IndexArgs$$$
+                     $$$InputArgValue Value="Internal signal"/$$$
+                  $$$/IndexArgs$$$
+               $$$/InputArgValue$$$
+               $$$InputArgValue Value="([\S]+)[\r\n]*"/$$$
+            $$$/InputArgs$$$         
+   /* Send value */
+   (void)Rte_Write_ComWrp_Outp_$$$Value Property="Value" Path="Groups" Index="1"/$$$(CS_ComWrp_ySignalf32Bit_ldf32);        
+         $$$/Array$$$ 
+       $$$/Template$$$
+   $$$/TemplateSelector$$$
+   $$$TemplateSelector Name="SignalMapping" Property="Value"$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Property="SignalName"/$$$
+      $$$/IndexArgs$$$
+      $$$IndexArgs$$$
+         $$$InputArgValue Value="Internal Signal State Signal"/$$$
+      $$$/IndexArgs$$$
+      $$$Template Value="n/a"/$$$
+      $$$Template Type="null"/$$$
+      $$$Template Value="default" $$$
+      $$$Array Name="Regex" Function=""$$$
+            $$$InputArgs$$$
+               $$$InputArgValue Name="SignalMapping" Property="Value"$$$
+                  $$$IndexArgs$$$
+                     $$$InputArgValue Property="SignalName"/$$$
+                  $$$/IndexArgs$$$
+                  $$$IndexArgs$$$
+                     $$$InputArgValue Value="Internal Signal State Signal"/$$$
+                  $$$/IndexArgs$$$
+               $$$/InputArgValue$$$
+               $$$InputArgValue Value="([\S]+)[\r\n]*"/$$$l
+            $$$/InputArgs$$$         
     /* Send state of signal */
-    (void)Rte_Write_ComWrp_Outp_sMaxDchaCurrentEM(CS_ComWrp_sSignalState_lde);
-  
+   (void)Rte_Write_ComWrp_Outp_$$$Value Property="Value" Path="Groups" Index="1"/$$$(CS_ComWrp_sSignalState_lde);        
+         $$$/Array$$$ 
+      $$$/Template$$$
+    $$$/TemplateSelector$$$  
 $$$/Array$$$
 $$$/Array$$$
 $$$/Template$$$
 $$$/TemplateSelector$$$
 $$$/Array$$$
 
+/***********************************************************************
+$$$Value Name="StandardFiggle" Function="Render"$$$
+    $$$InputArgs$$$
+        $$$InputArgValue Value="No Input Signals"/$$$
+        $$$InputArgValue Type="null"/$$$
+    $$$/InputArgs$$$
+$$$/Value$$$
+Following contents are the signals that not received from CAN but need write to RTE it's default value.
+***********************************************************************/
+
+$$$Array Context="SignalMapping"$$$
+   $$$TemplateSelector Index="CAN signal" Property="Value"$$$
+      $$$Template Value="n/a"$$$
+         $$$TemplateSelector Property="Value" Index="Internal signal"$$$
+            $$$Template Value="n/a"/$$$
+            $$$Template Value="default"$$$
+               $$$Array Name="Regex" Function=""$$$
+                  $$$InputArgs$$$
+                     $$$InputArgValue Index="Internal signal" Property="Value"/$$$                        
+                     $$$InputArgValue Value="([\S]+)[\r\n]*"/$$$l
+                  $$$/InputArgs$$$        
+    /* Send default value of signal */
+   (void)Rte_Write_ComWrp_Outp_$$$Value Property="Value" Path="Groups" Index="1"/$$$($$$Value Name="Parent" Property="Value" Index="Default Values(physical)"/$$$);        
+               $$$/Array$$$   
+               $$$Array Name="Regex" Function=""$$$
+                  $$$InputArgs$$$
+                     $$$InputArgValue Index="Internal Signal State Signal" Property="Value"/$$$                        
+                     $$$InputArgValue Value="([\S]+)[\r\n]*"/$$$
+                  $$$/InputArgs$$$        
+    /* Send default state of signal */
+   (void)Rte_Write_ComWrp_Outp_$$$Value Property="Value" Path="Groups" Index="1"/$$$(CS_ComWrp_SIG_STATE_Valid);        
+               $$$/Array$$$
+            $$$/Template$$$
+         $$$/TemplateSelector$$$
+      $$$/Template$$$
+   $$$/TemplateSelector$$$
+$$$/Array$$$
 
 
 

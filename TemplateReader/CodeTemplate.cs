@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace TemplateReader
 {
@@ -129,6 +130,7 @@ namespace TemplateReader
                 InputArgs,
                 FormatArgs,
                 InputArgValue,
+                IndexArgs,
             }
             public enum NodeAttributeEnum
             {
@@ -144,6 +146,8 @@ namespace TemplateReader
                 Format,
                 Index,
                 LineSpace,
+                Load,
+                Method
 
             }
             private MarkItem ()
@@ -160,8 +164,16 @@ namespace TemplateReader
                 Type = (MarkItem.NodeTypeEnum) Enum.Parse (typeof (MarkItem.NodeTypeEnum), markHead);
                 foreach (Match match in (Regex.Matches (headMark.Remove (0, markHead.Length), AttributeMatchPatternStringFormat)))
                 {
-                    string[] keyValuePair = match.Groups[1].Value.Split (new char[] { '=', '"' }, StringSplitOptions.None);
-                    AttributesDict[(MarkItem.NodeAttributeEnum) Enum.Parse (typeof (MarkItem.NodeAttributeEnum), keyValuePair[0])] = keyValuePair.Length > 1 ? keyValuePair[2] : "";
+                    string keyValueStr = match.Groups[1].Value;
+                    string[] keyValuePair = new string[]
+                    {
+                        //
+                        keyValueStr.Substring (0, keyValueStr.IndexOf ("=")),
+                        //
+                        keyValueStr.Remove (0, keyValueStr.IndexOf ("=") + 1),
+                    };
+                    keyValuePair[1] = keyValuePair[1].Substring (1, keyValuePair[1].Length - 2);
+                    AttributesDict[(MarkItem.NodeAttributeEnum) Enum.Parse (typeof (MarkItem.NodeAttributeEnum), keyValuePair[0])] = keyValuePair.Length > 1 ? keyValuePair[1] : "";
                 }
                 return this;
             }
