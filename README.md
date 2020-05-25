@@ -36,7 +36,7 @@ In the example upper, this project will use a dll in path and call the function 
 
 var DBCNodes=DBCFileParser.ParserNodesFromFile("*");
 StringBuilder content=new StringBuilder();
-content.Append("Uint32 RawSignal;\nfloat32 TransferSignal;“);
+content.Append("Uint32 RawSignal;\nfloat32 TransferSignal;");
 foreach(var signal in DBCNodes["ECU"].TransferSignals)
 {
     content.AppendFormat("RawSignal=ReadSignalFromName(\"{0}\");\nTransferSignal=RawSignal*{1}+{2};\nTransferSignalToComponent(TransferSignal);",signal.SignalName,signal.Scale,signal.Offset);
